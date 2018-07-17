@@ -1,0 +1,41 @@
+{
+  "name": "wood-node",
+  "version": "0.1.7",
+  "description": "nodejs api framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlego/wood-node.git"
+  },
+  "keywords": [
+    "wood",
+    "wood-node"
+  ],
+  "author": "legojs",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.18.2",
+    "connect-mongo": "^2.0.0",
+    "connect-multiparty": "^2.1.0",
+    "cookie-parser": "^1.4.3",
+    "crypto": "^1.0.1",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "image-size": "^0.6.2",
+    "jsonwebtoken": "^8.2.1",
+    "jszip": "^2.6.1",
+    "moment": "^2.22.1",
+    "mongo-sql": "^5.1.0",
+    "mongo-to-sql": "^1.3.2",
+    "mongodb": "^2.2.33",
+    "mysql2": "^1.5.3",
+    "redis": "^2.8.0",
+    "redlock-node": "^2.1.4",
+    "request": "^2.83.0",
+    "request-promise-any": "^1.0.5"
+  }
+}
