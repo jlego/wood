@@ -77,13 +77,19 @@ class Query {
     if(!Util.isEmpty(params)) this.sql.columns = params;
     return this;
   }
-  insert(params = {}){
+  insert(params){
     this.sql.type = 'insert';
     this.values(params);
     return this;
   }
-  values(params = {}){
-    if(!Util.isEmpty(params)) this.sql.values = Object.assign(this.sql.values || {}, params);
+  values(params){
+    if(!Util.isEmpty(params)) {
+      if(Array.isArray(params)){
+        this.sql.values = params;
+      }else{
+        this.sql.values = Object.assign(this.sql.values || {}, params);
+      }
+    }
     return this;
   }
   update(params = {}) {

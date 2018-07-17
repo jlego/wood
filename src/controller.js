@@ -121,9 +121,14 @@ class Controller {
   async create(req, res, next) {
     this._doParseInput(req, 'create');
     let Model = this._newModel(),
-        body = this.getParams(req);
-    Model.setData(body.data);
-    const result = await catchErr(Model.save());
+        body = this.getParams(req),
+        result = {};
+    if(Array.isArray(body.data)){
+      result = await catchErr(Model.create(body.data));
+    }else{
+      Model.setData(body.data);
+      result = await catchErr(Model.save());
+    }
     if(result.data) result.data = this._doParseOutput(req, result.data, 'create');
     res.print(result);
   }

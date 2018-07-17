@@ -188,10 +188,16 @@ class Model {
   }
 
   //新增数据
-  async create(data) {
+  async create(data, times) {
     if (!data) throw error('create方法的参数data不能为空');
     if (CONFIG.isDebug) console.warn('新增记录');
-    if (!data.id) {
+    let hasId = false;
+    if(Array.isArray(data)){
+      hasId = !!data.find(item => item.id);
+    }else{
+      hasId = !!data.id;
+    }
+    if (!hasId) {
       let err = this.validate();
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
@@ -206,8 +212,9 @@ class Model {
       }else{
         throw error(lock.err);
       }
+    }else{
+      throw error('新增数据不能包含id');
     }
-    throw error(false);
   }
 
   // 更新数据

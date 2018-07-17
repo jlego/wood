@@ -41,22 +41,21 @@ module.exports = {
       }
       next();
     }else{
-      // if(CONFIG.verifyLogin) {
-      //   let redisClient = new Redis.client('account');
-      //   const token = new Token(req.headers.project || '', redisClient);
-      //   token.verify(req, res, (err) => {
-      //     if(err) {
-      //       return res.print(req.method == 'OPTIONS' ? {} : Util.error({
-      //         code: 60000,
-      //         msg: err
-      //       }));
-      //     }
-      //     next();
-      //   });
-      // }else{
-      //   next();
-      // }
-      next();
+      if(CONFIG.verifyLogin) {
+        let redisClient = new Redis.client('account');
+        const token = new Token(req.headers.project || '', redisClient);
+        token.verify(req, res, (err) => {
+          if(err) {
+            return res.print(req.method == 'OPTIONS' ? {} : Util.error({
+              code: 60000,
+              msg: err
+            }));
+          }
+          next();
+        });
+      }else{
+        next();
+      }
     }
   },
   //验证请求body中间件

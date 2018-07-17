@@ -8,7 +8,6 @@ module.exports = {
   "error_nodata": {code: 104, msg: '暂无数据'},
   "error_json_format": {code: 105, msg: 'jsong格式不正确'},
   "error_body": {code: 106, msg: '请求参数不正确'},
-  "error_body_seqno": {code: 107, msg: '请求参数seqno不能为空'},
   "error_body_cmd": {code: 108, msg: '请求参数cmd不能为空'},
   "error_body_data": {code: 113, msg: '请求参数data不能为空'},
   "error_noroute": {code: 109, msg: '找不到此路由'},
