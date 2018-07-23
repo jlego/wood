@@ -56,14 +56,17 @@ class Mysql {
   createTable(){
     const {fields, tableName} = this.options;
     if(tables[tableName]) return;
+    for(let key in fields){
+      if(fields[key].type === 'datetime'){
+        fields[key].default = `'${fields[key].default}'`;
+      }
+    }
     let sql = this.query(),
       [sqlStr, values] = sql.create(tableName, fields).toSQL(),
       fieldsArr = Object.values(fields);
     fieldsArr.forEach(item => {
-      if(item.type !== 'serial'){
-        let length = item.length;
-        sqlStr = sqlStr.replace(/\s+(int|char|varchar|float)\s+/, ` $1(${Array.isArray(length) ? length.join(',') : length}) `);
-      }
+      let length = item.length;
+      if(length !== undefined) sqlStr = sqlStr.replace(/\s+(int|char|varchar|float)\s+/, ` $1(${Array.isArray(length) ? length.join(',') : length}) `);
     });
     sqlStr += ' default charset=utf8;'
     this.getConn().execute(sqlStr);

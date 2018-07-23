@@ -137,10 +137,27 @@ class Controller {
     this._doParseInput(req, 'update');
     let Model = this._newModel(),
         body = this.getParams(req);
-    delete body.data.updateTime;
-    const result = await catchErr(Model.update(body.data, false));
-    if(result.data) result.data = this._doParseOutput(req, result.data, 'update');
-    res.print(result);
+    if(Array.isArray(body.data)){
+      let allResult = {};
+      for(let i = 0; i < body.data.length; i++){
+        delete body.data[i].updateTime;
+        let result = await catchErr(Model.update(body.data[i], false));
+        if(result.err) {
+          allResult.err = result.err;
+          break;
+        }
+      }
+      if(!allResult.err){
+        allResult = {data: body.data.map(item => item.id)};
+        allResult.data = this._doParseOutput(req, allResult.data, 'update');
+      }
+      res.print(allResult);
+    }else{
+      delete body.data.updateTime;
+      const result = await catchErr(Model.update(body.data, false));
+      if(result.data) result.data = this._doParseOutput(req, result.data, 'update');
+      res.print(result);
+    }
   }
   // 删除
   async remove(req, res, next) {

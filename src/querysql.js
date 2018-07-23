@@ -134,7 +134,7 @@ class Query {
   toSQL(){
     let result = mongoSQL.sql(this.sql),
       str = result.toString();
-    str = str.replace(/(\$\d+)/g, '?').replace(/"/g, "`");
+    str = str.replace(/(\$\d+)/g, '?').replace(/"/g, "`").replace('insert', 'replace');
     return [str, result.values];
   }
 }

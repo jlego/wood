@@ -74,7 +74,7 @@ class Model {
         value.default = defaultValue || false;
         break;
       case 'datetime':
-        value.default = defaultValue || new Date();
+        value.default = defaultValue || Util.moment().format('YYYY-MM-DD HH:mm:ss');
         break;
       default:
         value.default = defaultValue || '';
@@ -121,7 +121,8 @@ class Model {
         let field = fields[key];
         if (!hasVirtualField && field.type == 'virtual') continue;
         if (typeof field == 'object' && !Array.isArray(field)) {
-          let theVal = field.value || field.default;
+          let theVal = field.value !== undefined ? field.value : field.default;
+          if(field.type == 'datetime') theVal = theVal.replace(/'/g, '');
           if(theVal !== undefined) parentData[key] = theVal;
         } else if (typeof field !== 'function') {
           if(field !== undefined) parentData[key] = field;
@@ -202,7 +203,13 @@ class Model {
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
       if (lock.data) {
-        let sql = this.SQL.insert(data);
+        data = Array.isArray(data) ? data : [data];
+        let newData = [];
+        let defaultValue = this.getData();
+        data.forEach(item => {
+          newData.push(Object.assign(JSON.parse(JSON.stringify(defaultValue)), item));
+        });
+        let sql = this.SQL.insert(newData);
         const result = await catchErr(this.db.execute(sql));
         if (result.data){
           return result.data;
