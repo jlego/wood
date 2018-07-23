@@ -32,7 +32,7 @@
     let config = {};  //配置
     App.start(config);
     
-模型(/models/)
+模型(/models/userModel.js)
 
     const { Model, Util } = require('wood-node'); //注：mysql时请使用Modelsql
     class UserModel extends Model {
@@ -65,7 +65,7 @@
     }
     module.exports = UserModel;
     
-控制器(/controllers/)
+控制器(/controllers/userController.js)
 
     const { Controller, catchErr } = require('wood-node');
     const UserModel = require('../models/userModel');
