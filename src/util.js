@@ -115,7 +115,6 @@ module.exports = {
       msg = !data.msg ? CONFIG.error_code.success.msg : data.msg;
     }
     return {
-      // seqno: reqData.seqno,
       cmd: reqData.cmd,
       status,
       msg,
