@@ -1,4 +1,4 @@
-# wood-node
+# wood
 ### 基于express的后台接口开发框架
 
 #### 现有功能:
