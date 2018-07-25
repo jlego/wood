@@ -62,6 +62,9 @@ module.exports = {
   requestBody(req, res, next){
     if (req.method == 'PUT') {
       if (req.body) {
+        // if (req.body.seqno === undefined) {
+        //   res.print(CONFIG.error_code.error_body_seqno);
+        // } else
         if (!req.body.cmd) {
           res.print(CONFIG.error_code.error_body_cmd);
         } else if (!req.body.data) {

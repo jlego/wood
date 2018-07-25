@@ -11,10 +11,12 @@ const Mysql = require('./src/mysql');
 const Redis = require('./src/redis');
 const Router = express.Router();
 const Util = require('./src/util');
+const Docx = require('./src/docx');
 const { error, catchErr } = Util;
 
 function startApp() {
   const app = express();
+  app.use(express.static(__dirname + '/docs'));
   app.use(bodyParser.json());
 
   // 跨域
@@ -44,6 +46,7 @@ function startApp() {
       app.use('/', moduleRoute);
     }
   });
+  app.use('/', Router.get(Docx.path, Docx.fun));
 
   // 返回错误信息
   app.use(function(err, req, res, next) {

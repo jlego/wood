@@ -2,6 +2,7 @@
 // by YuRonghui 2018-1-31
 const Redis = require('./redis');
 const Mongo = require('./mongo');
+const Mysql = require('./mysql');
 const Util = require('./util');
 const cluster = require('cluster');
 const {
@@ -15,6 +16,7 @@ class Model {
   constructor(data, opts = {}) {
     this.fieldMap = {};
     this._options = {
+      dbType: 'mongodb', //数据库 mongodb/mysql
       tableName: '', //集合名
       fields: {}, //集合字段
       index: {}, //创建索引
@@ -25,7 +27,17 @@ class Model {
     };
     if (!this._options.tableName) console.error('表名不能为空');
     this.redis = new Redis.client(this._options.tableName);
-    this.db = new Mongo.client(this._options.tableName);
+    switch (this._options.dbType) {
+      case 'mongodb':
+        this.db = new Mongo.client(this._options.tableName);
+        break;
+      case 'mysql':
+        this.db = new Mysql.client(this._options.tableName);
+        break;
+      default:
+        this.db = new Mongo.client(this._options.tableName);
+        break;
+    }
     this._initFields();
     if (data) this.setData(data);
     this._initSelect();
