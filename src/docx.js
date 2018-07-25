@@ -6,6 +6,7 @@ const Docxtemplater = require('docxtemplater');
 const ImageModule = require('docxtemplater-image-module');
 const imageSize = require("image-size");
 const moment = require('moment');
+const config = require('./config');
 
 class Docx {
   constructor(opts = {}) {
@@ -28,7 +29,7 @@ class Docx {
     let data = this.options.data;
     // 项目
     if (typeof data.project == 'string') {
-      data.project = JSON.parse(fs.readFileSync(data.project));
+      data.project = JSON.parse(fs.readFileSync(path.join(__dirname, data.project)));
       data.projectName = data.project.name;
       data.version = data.project.version;
       data.description = Util.filterHtml(data.project.description);
@@ -37,7 +38,7 @@ class Docx {
     }
     // 接口
     if (typeof data.apis == 'string') {
-      data.apis = JSON.parse(fs.readFileSync(data.apis));
+      data.apis = JSON.parse(fs.readFileSync(path.join(__dirname, data.apis)));
       let arr = data.project.url.split(':'),
         port = arr[arr.length - 1];
       data.apis.forEach(item => {
@@ -78,7 +79,7 @@ class Docx {
   // 生成文档
   generate() {
     if (!this.options.template || !this.options.output) return false;
-    let content = fs.readFileSync(this.options.template, 'binary');
+    let content = fs.readFileSync(path.join(__dirname, this.options.template), 'binary');
     let zip = new JSZip(content);
     this.doc.loadZip(zip);
     this.doc.setData(this.options.data);
@@ -103,30 +104,28 @@ class Docx {
     let buf = this.doc.getZip().generate({
       type: 'nodebuffer'
     });
-    fs.writeFileSync(this.options.output, buf);
+    fs.writeFileSync(path.join(__dirname, this.options.output), buf);
     return buf;
   }
 }
 
 module.exports = {
-  path: '/build/:modulename',
+  path: '/builddocs',
   fun: function(req, res, next) {
-    let moduleName = req.params.modulename;
-    if(!moduleName) res.end();
-    let Docx = new Docx({
-        data: {
-            modulename: moduleName,
-            apis: `docs/${moduleName}/api_data.json`,
-            project: `docs/${moduleName}/api_project.json`
-        },
-        template: 'template/doctpl/doc.docx',
-        output: `docs/${moduleName}/${moduleName}_###.docx`
+    let docx = new Docx({
+      data: {
+        modulename: config.projectName,
+        apis: `../../../docs/api_data.json`,
+        project: `../../../docs/api_project.json`
+      },
+      template: '../template/doctpl/doc.docx',
+      output: `../../../docs/${config.projectName}_###.docx`
     });
-    let result = Docx.generate();
+    let result = docx.generate();
     if (result) {
-        res.send(`${moduleName} api文档生成成功 ${moment().format('YYYY-MM-DD HH:mm:ss')}`);
+      res.send(`api文档生成成功 ${moment().format('YYYY-MM-DD HH:mm:ss')}`);
     } else {
-        res.send(`${moduleName} api文档生成失败`);
+      res.send(`api文档生成失败`);
     }
   }
 };

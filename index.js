@@ -16,7 +16,7 @@ const { error, catchErr } = Util;
 
 function startApp() {
   const app = express();
-  app.use(express.static(__dirname + '/docs'));
+  app.use(express.static('docs'));
   app.use(bodyParser.json());
 
   // 跨域
