@@ -15,7 +15,7 @@ module.exports = {
       }else{
         body = req.body;
       }
-      let result = Util.respData(data.err ? Util.error(data.err) : (data.data ? data.data : data), body);
+      let result = Util.respData(data.err ? Util.error(data.err) : data.data, body);
       let resultStr = JSON.stringify(result);
       // 压缩结果
       res.statusCode = 200;
@@ -62,9 +62,6 @@ module.exports = {
   requestBody(req, res, next){
     if (req.method == 'PUT') {
       if (req.body) {
-        // if (req.body.seqno === undefined) {
-        //   res.print(CONFIG.error_code.error_body_seqno);
-        // } else
         if (!req.body.cmd) {
           res.print(CONFIG.error_code.error_body_cmd);
         } else if (!req.body.data) {
