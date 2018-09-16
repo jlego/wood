@@ -15,7 +15,7 @@ module.exports = {
       }else{
         body = req.body;
       }
-      let result = Util.respData(data.err ? Util.error(data.err) : data.data, body);
+      let result = Util.respData(data.err ? Util.error(data.err) : (data.hasOwnProperty('data') ? data.data : data), body);
       let resultStr = JSON.stringify(result);
       // 压缩结果
       res.statusCode = 200;
