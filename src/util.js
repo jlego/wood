@@ -103,7 +103,7 @@ module.exports = {
   respData(data, reqData){
     let status = 0,
       msg = '';
-    if (!data) data = CONFIG.error_code.error_nodata;
+    if (!data && data !== false) data = CONFIG.error_code.error_nodata;
     if (data.path && data.message && data.kind) { //返回错误
       status = CONFIG.error_code.error_wrongdata.code;
       msg = CONFIG.error_code.error_wrongdata.msg;

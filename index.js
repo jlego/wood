@@ -89,6 +89,10 @@ module.exports = {
   Util,
   error,
   catchErr,
+  Mongo,
+  Mysql,
+  Redis,
+  Router,
   start(opts) {
     let that = this;
     if(opts) Object.assign(global.CONFIG, opts);
@@ -111,9 +115,5 @@ module.exports = {
     }else{
       console.error('系统配置不能为空!');
     }
-  },
-  Mongo,
-  Mysql,
-  Redis,
-  Router
+  }
 };
