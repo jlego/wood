@@ -16,6 +16,7 @@ const { error, catchErr } = Util;
 
 function startApp() {
   const app = express();
+  if(!CONFIG.isDebug) app.set('env', 'production');
   app.use(express.static('docs'));
   app.use(bodyParser.json());
 

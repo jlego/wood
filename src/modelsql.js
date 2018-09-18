@@ -382,6 +382,11 @@ class Model {
         let result = await this.db.execute(query);
         return Array.isArray(result) ? result[0] : {};
       } else {
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(true);
+          }, 500);
+        });
         return this.queryOne(data, addLock);
       }
     }
@@ -424,6 +429,11 @@ class Model {
         }
         return [];
       }else{
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(true);
+          }, 500);
+        });
         return this.queryList(body, noCatch, addLock);
       }
     }

@@ -132,6 +132,17 @@ class Controller {
     if(result.data) result.data = this._doParseOutput(req, result.data, 'create');
     res.print(result);
   }
+  //新增
+  async save(req, res, next) {
+    this._doParseInput(req, 'save');
+    let Model = this._newModel(),
+        body = this.getParams(req),
+        result = {};
+    Model.setData(body.data);
+    result = await catchErr(Model.save());
+    if(result.data) result.data = this._doParseOutput(req, result.data, 'save');
+    res.print(result);
+  }
   //修改
   async update(req, res, next) {
     this._doParseInput(req, 'update');
@@ -148,7 +159,7 @@ class Controller {
         }
       }
       if(!allResult.err){
-        allResult = {data: body.data.map(item => item.id)};
+        allResult = {data: body.data.map(item => item.rowid || item.id)};
         allResult.data = this._doParseOutput(req, allResult.data, 'update');
       }
       res.print(allResult);

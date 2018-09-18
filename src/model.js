@@ -16,7 +16,6 @@ class Model {
   constructor(data, opts = {}) {
     this.fieldMap = {};
     this._options = {
-      dbType: 'mongodb', //数据库 mongodb/mysql
       tableName: '', //集合名
       fields: {}, //集合字段
       index: {}, //创建索引
@@ -27,17 +26,7 @@ class Model {
     };
     if (!this._options.tableName) console.error('表名不能为空');
     this.redis = new Redis.client(this._options.tableName);
-    switch (this._options.dbType) {
-      case 'mongodb':
-        this.db = new Mongo.client(this._options.tableName);
-        break;
-      case 'mysql':
-        this.db = new Mysql.client(this._options.tableName);
-        break;
-      default:
-        this.db = new Mongo.client(this._options.tableName);
-        break;
-    }
+    this.db = new Mongo.client(this._options.tableName);
     this._initFields();
     if (data) this.setData(data);
     this._initSelect();
@@ -504,6 +493,11 @@ class Model {
         if (this.relation) query.populate(this.relation);
         return query.exec('one');
       } else {
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(true);
+          }, 500);
+        });
         return this.queryOne(data, addLock);
       }
     }
@@ -558,6 +552,11 @@ class Model {
         }
         return [];
       }else{
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(true);
+          }, 500);
+        });
         return this.queryList(body, noCatch, addLock);
       }
     }

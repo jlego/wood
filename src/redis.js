@@ -49,7 +49,7 @@ class Redis {
     });
   }
   // 表锁
-  lock(timeout = 5) {
+  lock(timeout = 1) {
     let that = this;
     return new Promise(async (resolve, reject) => {
       let hasLock = await Util.catchErr(that.hasLock());
