@@ -11,6 +11,7 @@ const Mysql = require('./src/mysql');
 const Redis = require('./src/redis');
 const Router = express.Router();
 const Util = require('./src/util');
+const Middlewares = require('./src/middleware');
 const Docx = require('./src/docx');
 const { error, catchErr } = Util;
 
@@ -25,28 +26,34 @@ function startApp() {
     app.all('*',
       function(req, res, next) {
         res.header("Access-Control-Allow-Origin", req.headers.origin);
-        res.header("Access-Control-Allow-Headers", CONFIG.verifyLogin ? "Content-Type,project,token,secretkey" : "Content-Type");
+        res.header("Access-Control-Allow-Headers", CONFIG.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
         res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
         res.header("Access-Control-Allow-Credentials", true);
         next();
       });
   }
-  const middleware = require('./src/middleware');
-  for(let key in middleware){
-    app.use(middleware[key]);
+  // 中间件
+  app.use(Middlewares.requestBody);
+  app.use(Middlewares.responseFormat);
+
+  // 加载路由模块
+  if(CONFIG.routes){
+    CONFIG.routes.forEach((moduleRoute) => {
+      app.use('/', moduleRoute);
+    });
+  }else{
+    const dirList = fs.readdirSync(path.resolve(__dirname, '../../routes'));
+    dirList.forEach((fileName) => {
+      let nameArr = fileName.split('.'),
+        moduleName = nameArr[0],
+        fileExt = nameArr[1];
+      if(fileExt == 'js'){
+        let moduleRoute = require(path.resolve(__dirname, `../../routes/${moduleName}`));
+        app.use('/', moduleRoute);
+      }
+    });
   }
 
-  // 加载模块
-  const dirList = fs.readdirSync(path.resolve(__dirname, '../../routes'));
-  dirList.forEach((fileName) => {
-    let nameArr = fileName.split('.'),
-      moduleName = nameArr[0],
-      fileExt = nameArr[1];
-    if(fileExt == 'js'){
-      let moduleRoute = require(path.resolve(__dirname, `../../routes/${moduleName}`));
-      app.use('/', moduleRoute);
-    }
-  });
   app.use('/', Router.get(Docx.path, Docx.fun));
 
   // 返回错误信息
@@ -86,6 +93,7 @@ module.exports = {
   Model: require('./src/model'),
   Modelsql: require('./src/modelsql'),
   Tcp: require('./src/tcp'),
+  Middlewares,
   Util,
   error,
   catchErr,
@@ -93,11 +101,17 @@ module.exports = {
   Mysql,
   Redis,
   Router,
+  addMiddleware(opts){
+    if(typeof opts === 'object'){
+      Object.assign(Middlewares, opts);
+    }else if(typeof opts === 'function'){
+      Middlewares[opts.name] = opts;
+    }
+  },
   start(opts) {
     let that = this;
     if(opts) Object.assign(global.CONFIG, opts);
     if(!Util.isEmpty(global.CONFIG)){
-      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
       if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
       // mysql
@@ -107,6 +121,7 @@ module.exports = {
         });
       }
       // mongodb
+      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       if(mongourl){
         Mongo.connect(mongourl, function (err, client) {
           startApp();

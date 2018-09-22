@@ -31,6 +31,21 @@ module.exports = {
     };
     next();
   },
+  //验证请求body中间件
+  requestBody(req, res, next){
+    if (req.method == 'PUT') {
+      if (req.body) {
+        if (!req.body.cmd) {
+          res.print(CONFIG.error_code.error_body_cmd);
+        } else if (!req.body.data) {
+          res.print(CONFIG.error_code.error_body_data);
+        }
+      } else {
+        res.print(CONFIG.error_code.error_body);
+      }
+    }
+    next();
+  }
   // 是否验证身份中间件
   verifyLogin(req, res, next){
     let secretkey = req.headers.secretkey;
@@ -58,19 +73,4 @@ module.exports = {
       }
     }
   },
-  //验证请求body中间件
-  requestBody(req, res, next){
-    if (req.method == 'PUT') {
-      if (req.body) {
-        if (!req.body.cmd) {
-          res.print(CONFIG.error_code.error_body_cmd);
-        } else if (!req.body.data) {
-          res.print(CONFIG.error_code.error_body_data);
-        }
-      } else {
-        res.print(CONFIG.error_code.error_body);
-      }
-    }
-    next();
-  }
 };
