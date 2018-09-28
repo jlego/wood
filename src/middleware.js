@@ -45,7 +45,7 @@ module.exports = {
       }
     }
     next();
-  }
+  },
   // 是否验证身份中间件
   verifyLogin(req, res, next){
     let secretkey = req.headers.secretkey;
