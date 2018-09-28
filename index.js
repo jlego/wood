@@ -112,6 +112,7 @@ module.exports = {
     let that = this;
     if(opts) Object.assign(global.CONFIG, opts);
     if(!Util.isEmpty(global.CONFIG)){
+      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
       if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
       // mysql
@@ -121,7 +122,6 @@ module.exports = {
         });
       }
       // mongodb
-      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       if(mongourl){
         Mongo.connect(mongourl, function (err, client) {
           startApp();
