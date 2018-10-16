@@ -17,10 +17,12 @@ class TestModel extends Model {
         "title": String,
         "options": Array,
         "creator": Object,
-        "subdata": [new Fields({
-          "key": String,
-          "value": String
-        })],
+        "subdata": [
+          new Fields({
+            "key": String,
+            "value": String
+          })
+        ],
         "createTime": Date,
         "updateTime": Date,
         "status": {
