@@ -10,14 +10,12 @@ const {
   catchErr
 } = Util;
 let largelimit = 20000; //限制不能超过2万条数据返回
-const fieldType = ['Number', 'String', 'Boolean', 'Array', 'Object', 'Date', 'Virtual'];
 
 class Model {
   constructor(data, opts = {}) {
-    this.fieldMap = {};
     this._options = {
       tableName: '', //集合名
-      fields: {}, //集合字段
+      fields: null, //集合字段
       index: {}, //创建索引
       select: {
         _id: 0
@@ -25,9 +23,9 @@ class Model {
       ...opts
     };
     if (!this._options.tableName) console.error('表名不能为空');
+    if (!this._options.fields) console.error('fields不能为空');
     this.redis = new Redis.client(this._options.tableName);
     this.db = new Mongo.client(this._options.tableName);
-    this._initFields();
     if (data) this.setData(data);
     this._initSelect();
     if (!Util.isEmpty(this._options.index)) this.createIndex(this._options.index);
@@ -47,87 +45,24 @@ class Model {
 
   // 设置getter和setter
   _get_set() {
-    let obj = {};
-    for (let key in this.fieldMap) {
+    let obj = {}, fieldMap = this._options.fields.fieldMap;
+    for (let key in fieldMap) {
       obj[key] = {
         get() {
           if (CONFIG.isDebug) console.warn(`getter: ${key}`);
-          return this.fieldMap[key].value || this.fieldMap[key].defaultValue;
+          return fieldMap[key].value || fieldMap[key].defaultValue;
         },
         set(val) {
           if (CONFIG.isDebug) console.warn(`setter: ${key}, ${val}`);
-          this.fieldMap[key].value = val;
+          fieldMap[key].value = val;
         }
       }
     }
     return obj;
   }
 
-  // 初始化字段
-  _initFields() {
-    let that = this;
-    function loopData(fields, parentKey) {
-      for (let key in fields) {
-        let field = fields[key],
-          alias = parentKey ? `${parentKey}.${key}` : key;
-        if (field == undefined) continue;
-        if (typeof field == 'object' && !Array.isArray(field)) {
-          if (!fieldType.includes(field.type)) {
-            loopData(fields[key], alias);
-          } else {
-            fields[key] = that._defaultValue(field);
-            fields[key].alias = alias;
-          }
-        } else {
-          fields[key] = that._defaultValue(field);
-          fields[key].alias = alias;
-        }
-        if (fields[key].alias) that.fieldMap[fields[key].alias] = fields[key];
-      }
-    }
-    loopData(this._options.fields);
-  }
-
-  //默认值
-  _defaultValue(value) {
-    let newValue = {
-        type: Array.isArray(value) ? 'Array' : Util.firstUpperCase(typeof value)
-      },
-      defaultValue = '';
-    if (typeof value == 'function') {
-      newValue.type = Util.firstUpperCase(value.name.toString());
-    } else if (typeof value == 'object' && !Array.isArray(value)) {
-      defaultValue = value.default;
-      Object.assign(newValue, value);
-    }
-    switch (newValue.type) {
-      case 'Number':
-        newValue.default = defaultValue || 0;
-        break;
-      case 'String':
-        newValue.default = defaultValue || '';
-        break;
-      case 'Boolean':
-        newValue.default = defaultValue || false;
-        break;
-      case 'Array':
-        newValue.default = defaultValue || [];
-        break;
-      case 'Object':
-        newValue.default = defaultValue || {};
-        break;
-      case 'Date':
-        newValue.default = defaultValue || new Date();
-        break;
-      case 'Virtual':
-        newValue.default = defaultValue || '';
-        break;
-    }
-    return newValue;
-  }
-
   _initSelect() {
-    let fields = this._options.fields,
+    let fields = this._options.fields.data,
       selectFields = {};
     for (let key in fields) {
       let item = fields[key];
@@ -160,130 +95,12 @@ class Model {
 
   // 设置数据
   setData(target, value) {
-    let fields = this._options.fields,
-      that = this;
-    if (target !== undefined && value !== undefined) {
-      if (typeof target == 'string') {
-        if (!fields[target]) return;
-        fields[target].value = value;
-      } else {
-        target.value = value;
-      }
-    } else if (typeof target == 'object' && !Array.isArray(target) && value == undefined) {
-      if (!Util.isEmpty(target)) {
-        function loopData(fields, data) {
-          for (let key in fields) {
-            let value = data[key];
-            if (value == undefined) continue;
-            if (!fieldType.includes(fields[key].type)) {
-              loopData(fields[key], value);
-            } else {
-              fields[key].value = value;
-            }
-          }
-        }
-        loopData(this._options.fields, target);
-      }
-    }
+    this._options.fields.setData(target, value);
   }
 
   // 获取模型数据
   getData(hasVirtualField = true) {
-    let that = this;
-    function loopData(fields, parentData) {
-      if (!Util.isEmpty(fields)) {
-        for (let key in fields) {
-          let field = fields[key];
-          if (!hasVirtualField && field.type == 'Virtual') continue;
-          if (typeof field == 'object' && !Array.isArray(field)) {
-            if (!fieldType.includes(field.type)) {
-              parentData[key] = loopData(field, {});
-            } else {
-              let theVal = field.value || field.default;
-              parentData[key] = theVal;
-            }
-          } else if (typeof field !== 'function') {
-            parentData[key] = field;
-          }
-        }
-      }
-      return parentData;
-    }
-    return loopData(this._options.fields, {});
-  }
-
-  _validateError(key, field) {
-    let err = null,
-      errObj = Util.deepCopy(CONFIG.error_code.error_validation);
-    if (typeof field == 'object') {
-      let value = field.value !== undefined ? field.value : field.default;
-      // 验证是否空值
-      if (field.required) {
-        let isOk = true;
-        if (value == undefined) isOk = false;
-        if (typeof value == 'string' && value == '') isOk = false;
-        if (typeof value == 'object') {
-          if (JSON.stringify(value) == '{}' || JSON.stringify(value) == '[]') isOk = false;
-        }
-        if (!isOk) {
-          err = errObj;
-          err.msg += `, [${key}]不能为空`;
-          return err;
-        }
-        // 验证数据类型
-        if (field.type && field.type !== 'Virtual') {
-          if (field.type == 'Date') {
-            if (!(value instanceof Date)) {
-              err = errObj;
-              err.msg += `, [${key}]数据类型不是${field.type}类型`;
-              return err;
-            }
-          } else if (typeof value !== field.type.toLowerCase()) {
-            err = errObj;
-            err.msg += `, [${key}]数据类型不是${field.type}类型`;
-            return err;
-          }
-        }
-      }
-      // 检验最大字符长度
-      if(field.maxLength){
-        if(JSON.stringify(value).length > field.maxLength){
-          err = errObj;
-          err.msg += `, [${key}]值长度超过最大允许值${field.maxLength}`;
-          return err;
-        }
-      }
-      //自定义验证  param: value
-      if (field.validator) {
-        if (typeof field.validator == 'function') {
-          let hasErr = field.validator(value);
-          if (hasErr) {
-            err = hasErr.error || errObj;
-            return err;
-          }
-        }
-      }
-    }
-    return err;
-  }
-
-  // 验证字段
-  validate() {
-    let that = this;
-    function loopData(fields) {
-      let hasErr = false;
-      for (let key in fields) {
-        let field = fields[key];
-        if (!fieldType.includes(field.type)) {
-          hasErr = loopData(field);
-        } else {
-          hasErr = that._validateError(key, field);
-        }
-        if (hasErr) break;
-      }
-      return hasErr;
-    }
-    return loopData(this._options.fields);
+    return this._options.fields.getData(hasVirtualField);
   }
 
   // 是否新的
@@ -298,7 +115,7 @@ class Model {
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
       this.rowid = data.rowid = rowid;
-      let err = this.validate();
+      let err = this._options.fields.validate();
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
       if (lock.data) {
@@ -314,31 +131,18 @@ class Model {
   async update(data, required = false) {
     if (!data) throw error('update方法的参数data不能为空');
     if (!this.isNew() || data.rowid) {
-      let err = this.validate(),
+      let err = this._options.fields.validate(),
         hasSet = false,
         rowid = this.rowid || data.rowid || data.$set.rowid;
       if (!required) err = false;
       if (err) {
         throw error(err);
       } else {
-        for (let key in data) {
-          if (key.indexOf('$') == 0) {
-            hasSet = true;
-            break;
-          }
-        }
-        if (!hasSet) data = {
-          $set: data
-        };
         let isLock = await catchErr(this.redis.lock());
         if (isLock.data) {
-          const result = await catchErr(this.db.update({
-            rowid: rowid
-          }, data));
+          const result = await catchErr(this.db.update({ rowid }, { $set: data }));
           if (result.data){
-            return {
-              rowid
-            };
+            return { rowid };
           }else{
             throw error(result.err);
           }
@@ -355,9 +159,7 @@ class Model {
     let data = this.getData(false);
     if (Util.isEmpty(data) || !data) throw error('save方法的data为空');
     if (!this.isNew() || data.rowid) {
-      const updateOk = await catchErr(this.update({
-        $set: data
-      }));
+      const updateOk = await catchErr(this.update(data));
       if (updateOk.err) throw error(updateOk.err);
       return updateOk.data;
     } else {
@@ -444,7 +246,7 @@ class Model {
     query.hasKey = hasKey;
     let obj = {};
     for (let key in body.data) {
-      if (!this._options.fields[key]) continue;
+      if (!this._options.fields.data[key]) continue;
       if (Array.isArray(body.data[key])) {
         obj[key] = {
           $in: body.data[key]

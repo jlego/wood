@@ -1,0 +1,19 @@
+{
+    "name": "活动接口",
+    "version": "0.1.0",
+    "description": "活动接口",
+    "title": "Custom apiDoc browser title",
+    "url": "http://119.146.204.122:32280",
+    "sampleUrl": "http://119.146.204.122:32280",
+    "template": {
+        "forceLanguage": "zh_cn",
+        "withCompare": true,
+        "withGenerator": true,
+        "jQueryAjaxSetup": {
+            "data": {
+                "cmd": "cmd",
+                "data": {}
+            }
+        }
+    }
+}

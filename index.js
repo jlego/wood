@@ -91,6 +91,7 @@ function startApp() {
 module.exports = {
   Controller: require('./src/controller'),
   Model: require('./src/model'),
+  Fields: require('./src/fields'),
   Modelsql: require('./src/modelsql'),
   Tcp: require('./src/tcp'),
   Middlewares,

@@ -6,7 +6,14 @@ class Controller {
   constructor(opts = {}) {
     this.options = {
       model: null,
-      parse: {},  //input, output
+      parse: {
+        input: (req, key) => {
+
+        },
+        output: (req, data, key) => {
+          return data;
+        }
+      },  //input, output
       addLock: {
         list: true,
         detail: true
