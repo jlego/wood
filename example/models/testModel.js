@@ -3,26 +3,6 @@ const { Model, Fields, error } = require('../../index');
 
 class TestModel extends Model {
   constructor(data = {}, opts = {}) {
-    const creator = new Fields({
-      "uid": String,
-      "name": String
-    });
-
-    const subdata = new Fields({
-      "key": {
-        type: 'String',
-        required: true
-      },
-      "value": {
-        type: 'String',
-        validator(val){
-          console.warn('======', val);
-          // return '字段不正确';
-          return false;
-        }
-      }
-    });
-
     const fields = new Fields({
       "rowid": {
         type: 'Number',
@@ -31,8 +11,26 @@ class TestModel extends Model {
       },
       "title": String,
       "options": Array,
-      "creator": creator,
-      "subdata": [ subdata ],
+      "creator": new Fields({
+        "uid": String,
+        "name": String
+      }),
+      "subdata": [
+        new Fields({
+          "key": {
+            type: 'String',
+            required: true
+          },
+          "value": {
+            type: 'String',
+            validator(val){
+              console.warn('======', val);
+              // return '字段不正确';
+              return false;
+            }
+          }
+        })
+      ],
       "createTime": Date,
       "updateTime": Date,
       "status": {
