@@ -27,7 +27,7 @@ class Model {
     this.redis = new Redis.client(this._options.tableName);
     this.db = new Mongo.client(this._options.tableName);
     if (data) this.setData(data);
-    this._initSelect();
+    this._init();
     if (!Util.isEmpty(this._options.index)) this.createIndex(this._options.index);
 
     return Object.create(this, this._get_set());
@@ -61,19 +61,11 @@ class Model {
     return obj;
   }
 
-  _initSelect() {
-    let fields = this._options.fields.data,
-      selectFields = {};
+  _init() {
+    let fields = this._options.fields.data;
     for (let key in fields) {
       let item = fields[key];
       if (key == '_id') continue;
-      // 过滤是否返回字段
-      if (!item.unselect) selectFields[key] = !item.select ? 1 : {};
-      if (item.select) {
-        for (let subkey in item.select) {
-          selectFields[key][subkey] = item.select[subkey];
-        }
-      }
       // 建索引
       if (item.index) {
         if(cluster.worker == null || CONFIG.service.initloop.workerid == cluster.worker.id){
@@ -90,7 +82,6 @@ class Model {
         }
       }
     }
-    Object.assign(this._options.select, selectFields);
   }
 
   // 设置数据
