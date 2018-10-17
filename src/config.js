@@ -8,6 +8,7 @@ module.exports = {
   verifyLogin: true, //是否验证登录
   secretKey: 'WOODNODE', //私密串
   isDebug: true, //是否开启调试模式
+  buildDocx: false, //是否生成文档
   crossDomain: true, //是否支持跨域
   error_code: Errorcode,  // 错误码
   secretkeys: {  //其他项目的请求私密串

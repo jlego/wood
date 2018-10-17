@@ -12,7 +12,6 @@ const Redis = require('./src/redis');
 const Router = express.Router();
 const Util = require('./src/util');
 const Middlewares = require('./src/middleware');
-const Docx = require('./src/docx');
 const { error, catchErr } = Util;
 
 function startApp() {
@@ -54,7 +53,10 @@ function startApp() {
     });
   }
 
-  app.use('/', Router.get(Docx.path, Docx.fun));
+  if(CONFIG.buildDocx){
+    const Docx = require('./src/docx');
+    app.use('/', Router.get(Docx.path, Docx.fun));
+  }
 
   // 返回错误信息
   app.use(function(err, req, res, next) {

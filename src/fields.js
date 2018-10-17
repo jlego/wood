@@ -1,9 +1,9 @@
 const Util = require('./util');
+const fieldType = ['Number', 'String', 'Boolean', 'Array', 'Object', 'Date', 'Virtual'];
 
 class Fields {
   constructor(opts = {}){
     this.fieldMap = {};
-    this.fieldType = ['Number', 'String', 'Boolean', 'Array', 'Object', 'Date', 'Virtual'];
     this.data = opts;
     this._init();
   }
@@ -15,26 +15,20 @@ class Fields {
         let field = fields[key],
           alias = parentKey ? `${parentKey}.${key}` : key;
         if (field == undefined) continue;
-        if (typeof field === 'object' && !Array.isArray(field)) {
-          if(field instanceof Fields){
-            fields[key] = that._defaultValue(loopData(field.data, alias));
-          }else{
-            if (!this.fieldType.includes(field.type)) {
+        if (typeof field === 'object') {
+          if (!fieldType.includes(field.type)) {
+            if(field instanceof Fields){
+              fields[key] = loopData(field.data, alias);
+            }else{
               loopData(fields[key], alias);
-            } else {
-              fields[key] = that._defaultValue(field);
-              fields[key].alias = alias;
             }
-          }
-        } else {
-          if(Array.isArray(field)){
-            if(field[0] instanceof Fields){
-              fields[key] = that._defaultValue([loopData(field[0].data, alias)]);
-            }
-          }else{
+          } else {
             fields[key] = that._defaultValue(field);
             fields[key].alias = alias;
           }
+        } else {
+          fields[key] = that._defaultValue(field);
+          fields[key].alias = alias;
         }
         if (fields[key].alias) that.fieldMap[fields[key].alias] = fields[key];
       }
@@ -45,19 +39,13 @@ class Fields {
 
   //默认值
   _defaultValue(value) {
-    let newValue = {
-        type: Array.isArray(value) ? 'Array' : Util.firstUpperCase(typeof value)
-      },
+    let newValue = { type: Array.isArray(value) ? 'Array' : Util.firstUpperCase(typeof value) },
       defaultValue = '';
-    if (typeof value == 'function') {
+    if (typeof value === 'function') {
       newValue.type = Util.firstUpperCase(value.name.toString());
-    } else if (typeof value == 'object' && !Array.isArray(value)) {
-      if(Array.isArray(value)){
-
-      }else{
-        defaultValue = value.default;
-        Object.assign(newValue, value);
-      }
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      defaultValue = value.default;
+      Object.assign(newValue, value);
     }
     switch (newValue.type) {
       case 'Number':
@@ -85,59 +73,55 @@ class Fields {
     return newValue;
   }
 
+  _showError(errObj){
+    switch(errObj.type){
+      case 'required':
+        errObj.msg += `, [${errObj.name}]不能为空`;
+        break;
+      case 'type':
+        errObj.msg += `, [${errObj.name}]数据类型不是${errObj.dataType}类型`;
+        break;
+    }
+    return errObj;
+  }
+
   _validateError(key, field) {
-    let err = null,
-      errObj = Util.deepCopy(CONFIG.error_code.error_validation);
-    if (typeof field == 'object') {
+    let errObj = Util.deepCopy(CONFIG.error_code.error_validation);
+    errObj.name = field.alias;
+    errObj.dataType = field.type;
+    if (typeof field === 'object') {
       let value = field.value !== undefined ? field.value : field.default;
       // 验证是否空值
       if (field.required) {
-        let isOk = true;
-        if (value == undefined) isOk = false;
-        if (typeof value == 'string' && value == '') isOk = false;
-        if (typeof value == 'object') {
-          if (JSON.stringify(value) == '{}' || JSON.stringify(value) == '[]') isOk = false;
-        }
-        if (!isOk) {
-          err = errObj;
-          err.msg += `, [${key}]不能为空`;
-          return err;
-        }
+        errObj.type = 'required';
+        if (value === undefined) return this._showError(errObj);
+        if (typeof value === 'Number' && value !== 0 && !value) return this._showError(errObj);
+        if (typeof value === 'string' && value == '') return this._showError(errObj);
+        if (typeof value === 'object' && Util.isEmpty(value)) return this._showError(errObj);
+
         // 验证数据类型
         if (field.type && field.type !== 'Virtual') {
-          if (field.type == 'Date') {
-            if (!(value instanceof Date)) {
-              err = errObj;
-              err.msg += `, [${key}]数据类型不是${field.type}类型`;
-              return err;
-            }
-          } else if (typeof value !== field.type.toLowerCase()) {
-            err = errObj;
-            err.msg += `, [${key}]数据类型不是${field.type}类型`;
-            return err;
+          errObj.type = 'type';
+          if (field.type === 'Date' && !(value instanceof Date)) return this._showError(errObj);
+          if (Array.isArray(value)) {
+            if(field.type !== 'Array') return this._showError(errObj);
+          }else{
+            if (typeof value !== field.type.toLowerCase()) return this._showError(errObj);
           }
-        }
-      }
-      // 检验最大字符长度
-      if(field.maxLength){
-        if(JSON.stringify(value).length > field.maxLength){
-          err = errObj;
-          err.msg += `, [${key}]值长度超过最大允许值${field.maxLength}`;
-          return err;
         }
       }
       //自定义验证  param: value
       if (field.validator) {
-        if (typeof field.validator == 'function') {
+        if (typeof field.validator === 'function') {
           let hasErr = field.validator(value);
           if (hasErr) {
-            err = hasErr.error || errObj;
-            return err;
+            errObj = hasErr.error ? hasErr.error : {...errObj, msg: errObj.msg += `, ${hasErr}` };
+            return this._showError(errObj);
           }
         }
       }
     }
-    return err;
+    return false;
   }
 
   // 验证字段
@@ -147,7 +131,7 @@ class Fields {
       let hasErr = false;
       for (let key in fields) {
         let field = fields[key];
-        if (!this.fieldType.includes(field.type)) {
+        if (!fieldType.includes(field.type)) {
           hasErr = loopData(field);
         } else {
           hasErr = that._validateError(key, field);
@@ -159,30 +143,42 @@ class Fields {
     return loopData(this.data);
   }
 
-  // 设置数据
+  // 设置模型数据
   setData(target, value) {
     let fields = this.data,
-      fieldType = this.fieldType,
       that = this;
     if (target !== undefined && value !== undefined) {
-      if (typeof target == 'string') {
+      if (typeof target === 'string') {
         if (!fields[target]) return;
         fields[target].value = value;
       } else {
         target.value = value;
       }
-    } else if (typeof target == 'object' && !Array.isArray(target) && value == undefined) {
+    } else if (typeof target === 'object' && !Array.isArray(target) && value === undefined) {
       if (!Util.isEmpty(target)) {
         function loopData(_fields, data) {
           for (let key in _fields) {
-            let value = data[key];
-            if (value == undefined) continue;
+            let _value = data[key];
+            if (_value == undefined) continue;
             if (!fieldType.includes(_fields[key].type)) {
-              loopData(_fields[key], value);
+              if(Array.isArray(_value) && Array.isArray(_fields[key])){
+                let newArr = [];
+                _value.forEach((item, index) => {
+                  let tempField = Util.deepCopy(_fields[key][0]);
+                  for(let subKey in tempField){
+                    tempField[subKey].alias = tempField[subKey].alias.replace(`${key}.0`, `${key}.${index}`);
+                  }
+                  newArr.push(loopData(tempField, item));
+                });
+                _fields[key] = newArr;
+              }else{
+                loopData(_fields[key], _value);
+              }
             } else {
-              _fields[key].value = value;
+              _fields[key].value = _value;
             }
           }
+          return _fields;
         }
         loopData(fields, target);
       }
@@ -196,10 +192,10 @@ class Fields {
       if (!Util.isEmpty(fields)) {
         for (let key in fields) {
           let field = fields[key];
-          if (!hasVirtualField && field.type == 'Virtual') continue;
-          if (typeof field == 'object' && !Array.isArray(field)) {
-            if (!this.fieldType.includes(field.type)) {
-              parentData[key] = loopData(field, {});
+          if (!hasVirtualField && field.type === 'Virtual') continue;
+          if (typeof field == 'object') {
+            if (!fieldType.includes(field.type)) {
+              parentData[key] = loopData(field, Array.isArray(field) ? [] : {});
             } else {
               let theVal = field.value || field.default;
               parentData[key] = theVal;

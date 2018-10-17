@@ -71,7 +71,7 @@ class Model {
       if (!item.unselect) selectFields[key] = !item.select ? 1 : {};
       if (item.select) {
         for (let subkey in item.select) {
-          selectFields[key][subkey] = 1;
+          selectFields[key][subkey] = item.select[subkey];
         }
       }
       // 建索引
@@ -114,12 +114,13 @@ class Model {
     let rowid = await this.redis.rowid();
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
-      this.rowid = data.rowid = rowid;
+      data.rowid = rowid;
+      this.setData(data);
       let err = this._options.fields.validate();
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
       if (lock.data) {
-        return this.db.create(data);
+        return this.db.create(this.getData());
       }else{
         throw error(lock.err);
       }
@@ -140,6 +141,7 @@ class Model {
       } else {
         let isLock = await catchErr(this.redis.lock());
         if (isLock.data) {
+          delete data.rowid;
           const result = await catchErr(this.db.update({ rowid }, { $set: data }));
           if (result.data){
             return { rowid };
