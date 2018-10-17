@@ -29,9 +29,16 @@ class TestController extends Controller {
         options: 0
       }
     }),
-        body = this.getParams(req);
-    console.warn(Model._options.select);
-    const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
+    body = this.getParams(req);
+    Model.setData({
+      creator: {
+        uid: "2222",
+        name: "小明"
+      }
+    });
+    const result = await catchErr(Model.save());
+    console.warn(Model.getData());
+    // const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
     if(result.err){
       res.print(error(result.err));
     }else{

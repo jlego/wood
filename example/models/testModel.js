@@ -4,8 +4,8 @@ const { Model, Fields, error } = require('../../index');
 class TestModel extends Model {
   constructor(data = {}, opts = {}) {
     const creator = new Fields({
-      "key": String,
-      "value": String
+      "uid": String,
+      "name": String
     });
 
     const subdata = new Fields({
@@ -48,10 +48,6 @@ class TestModel extends Model {
       fields: fields,
       ...opts
     });
-  }
-  myFun(){
-
-    this.save();
   }
 }
 

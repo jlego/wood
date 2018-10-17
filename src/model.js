@@ -125,7 +125,7 @@ class Model {
     if (!this.isNew() || data.rowid) {
       let err = this._options.fields.validate(),
         hasSet = false,
-        rowid = this.rowid || data.rowid || data.$set.rowid;
+        rowid = this.rowid || data.rowid;
       if (!required) err = false;
       if (err) {
         throw error(err);
@@ -133,7 +133,9 @@ class Model {
         let isLock = await catchErr(this.redis.lock());
         if (isLock.data) {
           delete data.rowid;
-          const result = await catchErr(this.db.update({ rowid }, { $set: data }));
+          let keys = Object.keys(data);
+          hasSet = keys[0].indexOf('$') === 0;
+          const result = await catchErr(this.db.update({ rowid }, hasSet ? data : { $set: data }));
           if (result.data){
             return { rowid };
           }else{
