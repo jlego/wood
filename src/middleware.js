@@ -37,11 +37,14 @@ module.exports = {
       if (req.body) {
         if (!req.body.cmd) {
           res.print(CONFIG.error_code.error_body_cmd);
+          return;
         } else if (!req.body.data) {
           res.print(CONFIG.error_code.error_body_data);
+          return;
         }
       } else {
         res.print(CONFIG.error_code.error_body);
+        return;
       }
     }
     next();

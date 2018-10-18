@@ -32,8 +32,8 @@ function startApp() {
       });
   }
   // 中间件
-  app.use(Middlewares.requestBody);
   app.use(Middlewares.responseFormat);
+  app.use(Middlewares.requestBody);
 
   // 加载路由模块
   if(CONFIG.routes){
