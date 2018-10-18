@@ -272,18 +272,24 @@ class Model {
 
   // 查询单条记录
   async queryOne(data, addLock = true) {
-    if (!data) throw error('queryOne方法参数data不能为空');
+    if (!data){
+      if(this.rowid){
+        data = Number(this.rowid);
+      }else{
+        throw error('queryOne方法参数data不能为空');
+      }
+    }
     const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
     if(hasLock.err){
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
         let query = this.db.query();
-        if (typeof data == 'number') {
+        if (typeof data === 'number') {
           query.where({
             rowid: data
           });
-        } else if (typeof data == 'object') {
+        } else if (typeof data === 'object') {
           query.where(data);
         }
         query.select(this._options.select);
