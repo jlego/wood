@@ -186,22 +186,22 @@ class Model {
   }
 
   // 计算总记录数
-  async count(body = {}, noCatch = true) {
+  async count(body = {}, noCache = true) {
     if (!body.data) throw error('count方法参数data不能为空');
-    const result = await catchErr(this.getQuery(body, noCatch));
+    const result = await catchErr(this.getQuery(body, noCache));
     if (result.data) {
       let query = result.data;
       let theKey = query.listKey + '_count',
         count = 0,
         timeout = 60 * 1; //5分钟
-      // if(noCatch) await this.redis.delKey(theKey);
-      if (await this.redis.existKey(theKey) && !noCatch) {
+      // if(noCache) await this.redis.delKey(theKey);
+      if (await this.redis.existKey(theKey) && !noCache) {
         if (CONFIG.isDebug) console.warn('已有count');
         let arr = await this.redis.listSlice(theKey, 0, 1);
         if (arr.length) count = arr[0];
       } else {
         if (CONFIG.isDebug) console.warn('没有count');
-        if (query.hasKey && !noCatch) {
+        if (query.hasKey && !noCache) {
           count = await this.redis.listCount(query.listKey);
         } else {
           count = await this.db.count(query);
@@ -307,7 +307,7 @@ class Model {
   }
 
   // 查询数据列表
-  async queryList(body = {}, noCatch = true, addLock = true) {
+  async queryList(body = {}, noCache = true, addLock = true) {
     let hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
     if(hasLock.err){
       throw error(hasLock.err);
@@ -318,7 +318,7 @@ class Model {
           rowid: -1
         }, body.data.sort || {});
         let timeout = 60 * 1; //半小时
-        const result = await catchErr(this.getQuery(body, noCatch));
+        const result = await catchErr(this.getQuery(body, noCache));
         if (result.data) {
           let query = result.data;
           if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
@@ -360,7 +360,7 @@ class Model {
             resolve(true);
           }, 500);
         });
-        return this.queryList(body, noCatch, addLock);
+        return this.queryList(body, noCache, addLock);
       }
     }
   }
