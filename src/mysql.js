@@ -55,7 +55,9 @@ class Mysql {
       fieldsArr = Object.values(fields);
     fieldsArr.forEach(item => {
       let length = item.length;
-      if(length !== undefined) sqlStr = sqlStr.replace(/\s+(int|char|varchar|float)\s+/, ` $1(${Array.isArray(length) ? length.join(',') : length}) `);
+      if(length !== undefined) {
+        sqlStr = sqlStr.replace(/\s+(int|char|varchar|float)\s+/, ` $1(${Array.isArray(length) ? length.join(',') : length}) `);
+      }
     });
     sqlStr += ' default charset=utf8;'
     this.getConn().execute(sqlStr);
