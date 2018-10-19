@@ -30,20 +30,23 @@ class TestController extends Controller {
       }
     }),
     body = this.getParams(req);
-    Model.setData({
-      creator: {
-        uid: "2222",
-        name: "小明"
-      }
-    });
-    const result = await catchErr(Model.save());
-    console.warn(Model.getData());
+    // res.print(body);
+    res.print(error('aaaaaaaaaaaaaa'));
+    // res.print(error('bbbbbbbbbbbbbbbb'));
+    // Model.setData({
+    //   creator: {
+    //     uid: "2222",
+    //     name: "小明"
+    //   }
+    // });
+    // const result = await catchErr(Model.save());
+    // console.warn(Model.getData());
     // const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
-    if(result.err){
-      res.print(error(result.err));
-    }else{
-      res.print(result);
-    }
+    // if(result.err){
+    //   res.print(error(result.err));
+    // }else{
+    //   res.print(result);
+    // }
   }
 }
 

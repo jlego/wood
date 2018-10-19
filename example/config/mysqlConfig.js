@@ -1,9 +1,9 @@
 module.exports = {
   main: {
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     user: 'root',
-    password: 'aaa',
-    database: 'dbname'
+    password: '123456',
+    database: 'test'
   },
   // ...
 };

@@ -123,16 +123,14 @@ module.exports = {
   client: Mongo,
   connect(url, callback) {
     mongodb.MongoClient.connect(url, (err, client) => {
-      if (err == null) {
-        console.log('MongoDB connected Successfull, Authenticated Successfully');
+      if (err) {
+        console.log('MongoDB failed :' + err.message);
+        this.db = null;
+        if (callback) callback(err);
+      } else {
+        console.log('MongoDB connected Successfull');
         this.db = db = client;
         if (callback) callback(err, client);
-      } else {
-        console.log('MongoDB failed :' + err.message);
-        console.log('reconnect to mongodb...');
-        setTimeout(() => {
-          this.connect();
-        }, 3000);
       }
     });
   },

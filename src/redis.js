@@ -180,12 +180,12 @@ module.exports = {
       console.log('Redis select', opts.db, 'db');
     });
     db.on('connect', () => {
-      console.log('Have connected to redis server!');
+      console.log('Redis connected Successfull');
       redlock = new RedLock(db);
       if(onConnect) onConnect(db);
     });
     db.on('error', (error) => {
-      console.log('redis proxy error:' + error);
+      console.log('Redis proxy error:' + error);
       if(onError) onError(error, db);
     });
   },
