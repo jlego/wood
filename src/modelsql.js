@@ -17,7 +17,7 @@ class Model {
       tableName: '', //集合名
       fields: {}, //集合字段
       select: [], //只返回的字段
-      dbConfig: 'main',
+      database: Object.keys(CONFIG.mysql)[0],
       ...opts
     };
     if (!this._options.tableName) console.error('表名不能为空');
@@ -68,7 +68,7 @@ class Model {
     }
     switch (value.type) {
       case 'int':
-        value.default = defaultValue || 0;
+        value.default = defaultValue || (value.required ? NaN : 0);
         break;
       case 'boolean':
         value.default = defaultValue || false;

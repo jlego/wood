@@ -49,7 +49,7 @@ class Fields {
     }
     switch (newValue.type) {
       case 'Number':
-        newValue.default = defaultValue || 0;
+        newValue.default = defaultValue || (value.required ? NaN : 0);
         break;
       case 'String':
         newValue.default = defaultValue || '';
@@ -95,7 +95,7 @@ class Fields {
       if (field.required) {
         errObj.type = 'required';
         if (value === undefined) return this._showError(errObj);
-        if (typeof value === 'Number' && value !== 0 && !value) return this._showError(errObj);
+        if (typeof value === 'number' && value !== 0 && !value) return this._showError(errObj);
         if (typeof value === 'string' && value == '') return this._showError(errObj);
         if (typeof value === 'object' && Util.isEmpty(value)) return this._showError(errObj);
 
@@ -144,17 +144,10 @@ class Fields {
   }
 
   // 设置模型数据
-  setData(target, value) {
+  setData(target) {
     let fields = this.data,
       that = this;
-    if (target !== undefined && value !== undefined) {
-      if (typeof target === 'string') {
-        if (!fields[target]) return;
-        fields[target].value = value;
-      } else {
-        target.value = value;
-      }
-    } else if (typeof target === 'object' && !Array.isArray(target) && value === undefined) {
+    if (typeof target === 'object' && !Array.isArray(target)) {
       if (!Util.isEmpty(target)) {
         function loopData(_fields, data) {
           for (let key in _fields) {

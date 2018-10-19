@@ -294,7 +294,7 @@ class Model {
         }
         query.select(this._options.select);
         if (this.relation) query.populate(this.relation);
-        return query.exec('one');
+        return query.exec('one') || {};
       } else {
         await new Promise((resolve, reject) => {
           setTimeout(() => {

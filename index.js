@@ -119,9 +119,11 @@ module.exports = {
       // redis
       if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
       // mysql
-      if(CONFIG.mysql.main){
-        new Mysql().connect('main', function() {
-          if(!mongourl) startApp();
+      if(CONFIG.mysql){
+        new Mysql().connect().then(() => {
+          if(!mongourl) {
+            startApp();
+          }
         });
       }
       // mongodb

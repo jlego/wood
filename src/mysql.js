@@ -7,8 +7,8 @@ const {
   error,
   catchErr
 } = Util;
-let pools = {}; //连接池
-let tables = {}; //数据表名单
+global.pools = {}; //连接池
+global.tables = {}; //数据表名单
 
 class Mysql {
   constructor(opts = {}) {
@@ -16,7 +16,7 @@ class Mysql {
       tableName: '', //集合名
       fields: {}, //集合字段
       select: [], //只返回的字段
-      dbConfig: 'main',
+      database: '',
       ...opts
     };
   }
@@ -24,38 +24,27 @@ class Mysql {
   query(tableName) {
     return new Query(tableName ? tableName : this.options.tableName);
   }
-  // 创建数据库连接
-  connect(config, callback) {
-    if(!pools[config]){
-      if(CONFIG.mysql[config]) {
-        pools[config] = mysql.createPool(CONFIG.mysql[config]);
-        if(pools[config]) {
+  // 创建数据库连接池
+  async connect() {
+    for(let dbName in CONFIG.mysql){
+      if(!global.pools[dbName]){
+        if(CONFIG.mysql[dbName]) {
+          let opts = CONFIG.mysql[dbName];
+          opts.database = dbName;
+          global.pools[dbName] = await mysql.createConnection(opts);
           console.log('Mysql connected Successfull');
-          if(callback) callback();
-          pools[config].on('acquire', function (connection) {
-            console.log('Mysql connection %d acquired', connection.threadId);
-          });
-          pools[config].on('connection', function (connection) {
-            console.log('Mysql connected Successfull as id ' + connection.threadId);
-          });
-          pools[config].on('enqueue', function () {
-            console.log('Waiting for available connection slot');
-          });
-          pools[config].on('release', function (connection) {
-            console.log('Connection %d released', connection.threadId);
-          });
         }
       }
     }
   }
   // 获取连接
-  getConn(dbConfig){
-    return pools[dbConfig ? dbConfig : this.options.dbConfig];
+  getConn(database){
+    return global.pools[database || this.options.database];
   }
   // 创建表
   createTable(){
     const {fields, tableName} = this.options;
-    if(tables[tableName]) return;
+    if(global.tables[tableName]) return;
     for(let key in fields){
       if(fields[key].type === 'datetime'){
         fields[key].default = `'${fields[key].default}'`;
@@ -70,7 +59,7 @@ class Mysql {
     });
     sqlStr += ' default charset=utf8;'
     this.getConn().execute(sqlStr);
-    tables[tableName] = true;
+    global.tables[tableName] = true;
   }
   // 清除表
   dropTable() {

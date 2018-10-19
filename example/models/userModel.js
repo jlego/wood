@@ -4,6 +4,7 @@ const { Modelsql, error } = require('../../index');
 class UserModel extends Modelsql {
   constructor(data = {}, opts = {}) {
     super(data, {
+      database: 'test',
       tableName: 'users',
       fields: {
         //行Id
