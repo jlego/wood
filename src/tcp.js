@@ -14,7 +14,6 @@ class Tcp {
     this.conn = null;
     this.isConnected = false;
     this.isClosed = false;
-    this.buffer = Buffer(0);
     if(this.options.isStart && !this.conn) this.init();
   }
   // 初始化服务
@@ -25,7 +24,6 @@ class Tcp {
     this.conn.on('connect', () => {
       console.log(`已连接到${this.config.host}:${this.config.port}服务器！`);
       this.isConnected = true;
-      this.buffer = Buffer(0);
       this.onConnect();
     });
     this.conn.on('data', (data) => {
@@ -37,7 +35,7 @@ class Tcp {
     });
     this.conn.on('error', (err) => {
       console.log('有错误发送，按错误码进行处理 error := ', err);
-      this.onError();
+      this.onError(err);
     });
     this.conn.on('end', () => {
       console.log(`断开与${this.config.host}:${this.config.port}服务器的连接`);
@@ -59,7 +57,7 @@ class Tcp {
   onConnect(){}
   onData(data){}
   onTimeout(){}
-  onError(){}
+  onError(err){}
   onEnd(){}
   onClose(){}
 }

@@ -10,6 +10,7 @@ const {
   catchErr
 } = Util;
 let largelimit = 20000; //限制不能超过2万条数据返回
+const _timeout = 0;
 
 class Model {
   constructor(data, opts = {}) {
@@ -299,7 +300,7 @@ class Model {
         await new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve(true);
-          }, 500);
+          }, _timeout);
         });
         return this.queryOne(data, addLock);
       }
@@ -358,7 +359,7 @@ class Model {
         await new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve(true);
-          }, 500);
+          }, _timeout);
         });
         return this.queryList(body, noCache, addLock);
       }

@@ -78,16 +78,14 @@ function startApp() {
   });
 
   // 监听服务
-  if(!CONFIG.gateway){
-    const httpServer = app.listen(
-      CONFIG.service.http_server.listenport,
-      function() {
-        let host = httpServer.address().address;
-        let port = httpServer.address().port;
-        console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
-      }
-    );
-  }
+  const httpServer = app.listen(
+    CONFIG.service.http_server.listenport,
+    function() {
+      let host = httpServer.address().address;
+      let port = httpServer.address().port;
+      console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
+    }
+  );
 }
 
 module.exports = {
