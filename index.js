@@ -12,6 +12,7 @@ const Redis = require('./src/redis');
 const Router = express.Router();
 const Util = require('./src/util');
 const Middlewares = require('./src/middleware');
+const Model = require('./src/model');
 const { error, catchErr } = Util;
 
 function startApp() {
@@ -89,8 +90,9 @@ function startApp() {
 }
 
 module.exports = {
+  _models: new Map(),
   Controller: require('./src/controller'),
-  Model: require('./src/model'),
+  Model: new Model(this),
   Fields: require('./src/fields'),
   Modelsql: require('./src/modelsql'),
   Tcp: require('./src/tcp'),

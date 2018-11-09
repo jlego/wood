@@ -14,39 +14,49 @@ const _timeout = 0;
 const _KeyTimeout = 60 * 1; //设置listkey过期时间，秒
 
 class Model {
-  constructor(ctx) {
-    this.ctx = ctx;
-    return Object.create(this, this._get());
-  }
-  // 定义数据表
-  define(tableName, fields, select){
-    if (!fields || typeof !== 'object') console.error('fields不能为空');
-    if(!this.ctx._models.has(tableName)){
-      let theModel = new Model(tableName, this.ctx);
-      theModel.fields = fields;
-      if(select) theModel.select = select;
-      theModel.redis = new Redis.client(tableName);
-      theModel.db = new Mongo.client(tableName);
-      tableName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1); //首字母大写
-      this.ctx._models.set(tableName, theModel);
-      this._init();
-    }
+  constructor(data, opts = {}) {
+    this._options = {
+      tableName: '', //集合名
+      fields: null, //集合字段
+      index: {}, //创建索引
+      select: {
+        _id: 0
+      }, //只返回的字段
+      ...opts
+    };
+    if (!this._options.tableName) console.error('表名不能为空');
+    if (!this._options.fields) console.error('fields不能为空');
+    this.redis = new Redis.client(this._options.tableName);
+    this.db = new Mongo.client(this._options.tableName);
+    if (data) this.setData(data);
+    this._init();
+    if (!Util.isEmpty(this._options.index)) this.createIndex(this._options.index);
+
+    return Object.create(this, this._get_set());
   }
 
-  _toPromise(val){
-    return new Promise((resolve, reject) => {
-      resolve(val);
-    });
+  // 创建索引
+  createIndex(opts = {}) {
+    if (!Util.isEmpty(opts)) this.db.collection.ensureIndex(opts);
+  }
+
+  // 删除索引
+  removeIndex(name) {
+    if (name) this.db.collection.dropIndex(name);
   }
 
   // 设置getter和setter
-  _get() {
-    let obj = {}, models = this.ctx._models;
-    for (let key of models) {
+  _get_set() {
+    let obj = {}, fieldMap = this._options.fields.fieldMap;
+    for (let key in fieldMap) {
       obj[key] = {
         get() {
           if (CONFIG.isDebug) console.warn(`getter: ${key}`);
-          return models.get(key);
+          return fieldMap[key].value || fieldMap[key].defaultValue;
+        },
+        set(val) {
+          if (CONFIG.isDebug) console.warn(`setter: ${key}, ${val}`);
+          fieldMap[key].value = val;
         }
       }
     }
@@ -54,7 +64,7 @@ class Model {
   }
 
   _init() {
-    let fields = this.fields.data;
+    let fields = this._options.fields.data;
     for (let key in fields) {
       let item = fields[key];
       if (key == '_id') continue;
@@ -76,85 +86,19 @@ class Model {
     }
   }
 
-  // 创建索引
-  createIndex(opts = {}) {
-    if (!Util.isEmpty(opts)) this.db.collection.ensureIndex(opts);
-  }
-
-  // 删除索引
-  removeIndex(name) {
-    if (name) this.db.collection.dropIndex(name);
-  }
-
   // 设置数据
   setData(target, value) {
-    this.fields.setData(target, value);
+    this._options.fields.setData(target, value);
   }
 
   // 获取模型数据
   getData(hasVirtualField = true) {
-    return this.fields.getData(hasVirtualField);
+    return this._options.fields.getData(hasVirtualField);
   }
 
   // 是否新的
   isNew() {
     return !this.rowid;
-  }
-
-  // 查询条件对象
-  async query(req, clearListKey) {
-    let where = {};
-    if(req && req.body && req.body.data){
-      let limit = req.body.data.limit == undefined ? 20 : Number(req.body.data.limit),
-        page = req.body.data.page || 1;
-      where = req.body.data.where || {};
-      req.body.data.largepage = req.body.data.largepage || 1;
-      page = page % Math.ceil(largelimit / limit) || 1;
-      let listKey = await Util.getListKey(req); //生成listkey
-      let hasKey = await this.redis.existKey(listKey); //key是否存在
-      if (clearListKey && hasKey) {
-        await this.redis.delKey(listKey); //删除已有的key
-        hasKey = false;
-      }
-      if (hasKey) {
-        let startIndex = (page - 1) * limit;
-        req.body.data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
-        req.body.data.rowid = req.body.data.rowid.map(item => parseInt(item));
-      }
-    }
-    let query = this.db.query({ where });
-    query.listKey = listKey;
-    query.hasKey = hasKey;
-
-    let obj = {};
-    for (let key in req.body.data) {
-      if (!this.fields.data[key]) continue;
-      if (Array.isArray(body.data[key])) {
-        obj[key] = {
-          $in: body.data[key]
-        };
-      } else {
-        if(typeof body.data[key] == 'object'){
-          if(body.data[key].like){ // 模糊查询
-            obj[key] = {
-              $regex: body.data[key].like
-            };
-          }else if(body.data[key].search){ // 全文搜索
-            obj['$text'] = {
-              $search: body.data[key].search
-            };
-          }else{
-            obj[key] = body.data[key];
-          }
-        }else{
-          obj[key] = {
-            $eq: body.data[key]
-          };
-        }
-      }
-    }
-    query.where(obj);
-    return query;
   }
 
   //新增数据
@@ -165,7 +109,7 @@ class Model {
     if (rowid || data.rowid == 0) {
       data.rowid = rowid;
       this.setData(data);
-      let err = this.fields.validate();
+      let err = this._options.fields.validate();
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
       if (lock.data) {
@@ -181,7 +125,7 @@ class Model {
   async update(data, required = false) {
     if (!data) throw error('update方法的参数data不能为空');
     if (!this.isNew() || data.rowid) {
-      let err = this.fields.validate(),
+      let err = this._options.fields.validate(),
         hasSet = false,
         rowid = this.rowid || data.rowid;
       if (!required) err = false;
@@ -243,50 +187,27 @@ class Model {
     }
   }
 
-  // 查询单条记录
-  async findOne(data, addLock = true) {
-    const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {};
-    if(hasLock.err){
-      throw error(hasLock.err);
-    }else{
-      if (!hasLock.data) {
-        let query = data._isQuery ? data : this.db.query();
-        if (typeof data === 'number') {
-          query.where({
-            rowid: data
-          });
-        } else if (typeof data === 'object') {
-          query.where(data);
-        }
-        query.select(this.select);
-        if (!Util.isEmpty(this.relation)) query.populate(this.relation);
-        return query.exec('one') || {};
-      } else {
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve(true);
-          }, _timeout);
-        });
-        return this.findOne(data, addLock);
-      }
-    }
-  }
-
   // 计算总记录数
-  async count(data, hasCache) {
-    if (!data) throw error('count方法参数data不能为空');
-    const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
+  async count(body = {}, hasCache) {
+    if (!body.data) throw error('count方法参数data不能为空');
+    const result = await catchErr(this.getQuery(body, hasCache));
     if (result.data) {
       let query = result.data;
       let theKey = query.listKey + '_count',
         count = 0;
-      if(!hasCache) await this.redis.delKey(theKey);
-      if (await this.redis.existKey(theKey)) {
+      // if(hasCache) await this.redis.delKey(theKey);
+      if (await this.redis.existKey(theKey) && hasCache) {
         if (CONFIG.isDebug) console.warn('已有count');
-        count = await this.redis.getValue(theKey);
+        let arr = await this.redis.listSlice(theKey, 0, 1);
+        if (arr.length) count = arr[0];
       } else {
-        count = await this.db.count(query);
-        this.redis.setValue(theKey, count);
+        if (CONFIG.isDebug) console.warn('没有count');
+        if (query.hasKey && hasCache) {
+          count = await this.redis.listCount(query.listKey);
+        } else {
+          count = await this.db.count(query);
+        }
+        this.redis.listPush(theKey, [count]);
         this.redis.setKeyTimeout(theKey, _KeyTimeout);
       }
       return Number(count);
@@ -295,16 +216,109 @@ class Model {
     }
   }
 
+  // 查询条件对象
+  async getQuery(opts = {}, clearListKey) {
+    let body = Util.deepCopy(opts),
+      limit = body.data.limit == undefined ? 20 : Number(body.data.limit),
+      page = body.data.page || 1,
+      where = body.data.where || {};
+    body.data.largepage = body.data.largepage || 1;
+    page = page % Math.ceil(largelimit / limit) || 1;
+    let listKey = await Util.getListKey(body); //生成listkey
+    let hasKey = await this.redis.existKey(listKey); //key是否存在
+    if (clearListKey && hasKey) {
+      await this.redis.delKey(listKey); //删除已有的key
+      hasKey = false;
+    }
+    if (hasKey) {
+      let startIndex = (page - 1) * limit;
+      body.data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
+      body.data.rowid = body.data.rowid.map(item => parseInt(item));
+    }
+    let query = this.db.query({
+      where: where
+    });
+    query.listKey = listKey;
+    query.hasKey = hasKey;
+    let obj = {};
+    for (let key in body.data) {
+      if (!this._options.fields.data[key]) continue;
+      if (Array.isArray(body.data[key])) {
+        obj[key] = {
+          $in: body.data[key]
+        };
+      } else {
+        if(typeof body.data[key] == 'object'){
+          if(body.data[key].like){ // 模糊查询
+            obj[key] = {
+              $regex: body.data[key].like
+            };
+          }else if(body.data[key].search){ // 全文搜索
+            obj['$text'] = {
+              $search: body.data[key].search
+            };
+          }else{
+            obj[key] = body.data[key];
+          }
+        }else{
+          obj[key] = {
+            $eq: body.data[key]
+          };
+        }
+      }
+    }
+    query.where(obj);
+    return query;
+  }
+
+  // 查询单条记录
+  async queryOne(data, addLock = true) {
+    if (!data){
+      if(this.rowid){
+        data = Number(this.rowid);
+      }else{
+        throw error('queryOne方法参数data不能为空');
+      }
+    }
+    const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
+    if(hasLock.err){
+      throw error(hasLock.err);
+    }else{
+      if (!hasLock.data) {
+        let query = this.db.query();
+        if (typeof data === 'number') {
+          query.where({
+            rowid: data
+          });
+        } else if (typeof data === 'object') {
+          query.where(data);
+        }
+        query.select(this._options.select);
+        if (this.relation) query.populate(this.relation);
+        return query.exec('one') || {};
+      } else {
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(true);
+          }, _timeout);
+        });
+        return this.queryOne(data, addLock);
+      }
+    }
+  }
+
   // 查询数据列表
-  async findList(data, hasCache, addLock = true) {
+  async queryList(body = {}, hasCache, addLock = true) {
     let hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
     if(hasLock.err){
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
-        if (!data) throw error('queryList方法参数data不能为空');
-        data.sort = Object.assign({ rowid: -1 }, data.sort || {});
-        const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
+        if (!body.data) throw error('queryList方法参数data不能为空');
+        body.data.sort = Object.assign({
+          rowid: -1
+        }, body.data.sort || {});
+        const result = await catchErr(this.getQuery(body, hasCache));
         if (result.data) {
           let query = result.data;
           if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
@@ -313,23 +327,23 @@ class Model {
               rowid: 1
             });
           } else {
-            query.select(this.select);
+            query.select(this._options.select);
           }
-          query.sort(data.sort);
-          if (!Util.isEmpty(this.relation)) query.populate(this.relation);
+          query.sort(body.data.sort);
+          if (this.relation) query.populate(this.relation);
           const docsResult = await catchErr(query.exec('list'));
           if (docsResult.data) {
             let docs = docsResult.data;
             // 缓存rowid
             if (!query.hasKey && docs.length) {
               if (docs.length >= largelimit) {
-                data.largepage = data.largepage || 1;
-                let startNum = (data.largepage - 1) * largelimit;
+                body.data.largepage = body.data.largepage || 1;
+                let startNum = (body.data.largepage - 1) * largelimit;
                 docs = docs.slice(startNum, startNum + largelimit);
               }
               await this.redis.listPush(query.listKey, docs.map(item => item.rowid));
               this.redis.setKeyTimeout(query.listKey, _KeyTimeout); //设置listkey一小时后过期
-              return this.findList(data, false, addLock);
+              return this.queryList(body, false, addLock);
             } else {
               return docs;
             }
@@ -346,7 +360,7 @@ class Model {
             resolve(true);
           }, _timeout);
         });
-        return this.findList(data, hasCache, addLock);
+        return this.queryList(body, hasCache, addLock);
       }
     }
   }

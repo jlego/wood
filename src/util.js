@@ -44,14 +44,15 @@ module.exports = {
     return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
   },
   // 生成表查询条件listkey
-  getListKey(body) {
-    let data = this.deepCopy(body);
+  getListKey(req) {
+    let data = this.deepCopy(req.body);
     delete data.data.limit;
     delete data.data.page;
     let arr = [];
     for (let key in data) {
       arr.push(`${key}=${JSON.stringify(data[key])}`);
     }
+    arr.push(`url=${req.url}`);
     arr.sort();
     return this.md5(arr.join('&'));
   },
