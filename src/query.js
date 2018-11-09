@@ -7,7 +7,9 @@ class Query {
     if(!params.where) params = { where: params };
     this.query = { //查询条件
       where: {},
-      select: {},
+      select: {
+        rowid: 1
+      },
       sort: {
         rowid: -1
       },

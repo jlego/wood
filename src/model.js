@@ -24,7 +24,7 @@ class Model {
     if(!this.ctx._models.has(tableName)){
       let theModel = new Model(tableName, this.ctx);
       theModel.fields = fields;
-      if(select) theModel.select = select;
+      theModel.select = select || { rowid: -1 };
       theModel.redis = new Redis.client(tableName);
       theModel.db = new Mongo.client(tableName);
       tableName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1); //首字母大写
@@ -102,58 +102,63 @@ class Model {
   }
 
   // 查询条件对象
-  async query(req, clearListKey) {
-    let where = {};
-    if(req && req.body && req.body.data){
-      let limit = req.body.data.limit == undefined ? 20 : Number(req.body.data.limit),
-        page = req.body.data.page || 1;
-      where = req.body.data.where || {};
-      req.body.data.largepage = req.body.data.largepage || 1;
+  async query(req = {}, clearListKey) {
+    let where = {}, body = req && req.body ? req.body : req;
+    if(body && body.data){
+      data = body.data;
+      let limit = body.data.limit == undefined ? 20 : Number(body.data.limit),
+        page = body.data.page || 1;
+      where = body.data.where || {};
+      body.data.largepage = body.data.largepage || 1;
       page = page % Math.ceil(largelimit / limit) || 1;
-      let listKey = await Util.getListKey(req); //生成listkey
-      let hasKey = await this.redis.existKey(listKey); //key是否存在
-      if (clearListKey && hasKey) {
-        await this.redis.delKey(listKey); //删除已有的key
-        hasKey = false;
-      }
-      if (hasKey) {
-        let startIndex = (page - 1) * limit;
-        req.body.data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
-        req.body.data.rowid = req.body.data.rowid.map(item => parseInt(item));
+      let listKey = '', hasKey = false;
+      if(req.url){
+        listKey = await Util.getListKey(req); //生成listkey
+        hasKey = await this.redis.existKey(listKey); //key是否存在
+        if (clearListKey && hasKey) {
+          await this.redis.delKey(listKey); //删除已有的key
+          hasKey = false;
+        }
+        if (hasKey) {
+          let startIndex = (page - 1) * limit;
+          body.data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
+          body.data.rowid = body.data.rowid.map(item => parseInt(item));
+        }
       }
     }
     let query = this.db.query({ where });
     query.listKey = listKey;
     query.hasKey = hasKey;
-
-    let obj = {};
-    for (let key in req.body.data) {
-      if (!this.fields.data[key]) continue;
-      if (Array.isArray(body.data[key])) {
-        obj[key] = {
-          $in: body.data[key]
-        };
-      } else {
-        if(typeof body.data[key] == 'object'){
-          if(body.data[key].like){ // 模糊查询
-            obj[key] = {
-              $regex: body.data[key].like
-            };
-          }else if(body.data[key].search){ // 全文搜索
-            obj['$text'] = {
-              $search: body.data[key].search
-            };
-          }else{
-            obj[key] = body.data[key];
-          }
-        }else{
+    if(!Util.isEmpty(body)){
+      let obj = {};
+      for (let key in body) {
+        if (!this.fields.data[key]) continue;
+        if (Array.isArray(body.data[key])) {
           obj[key] = {
-            $eq: body.data[key]
+            $in: body.data[key]
           };
+        } else {
+          if(typeof body.data[key] == 'object'){
+            if(body.data[key].like){ // 模糊查询
+              obj[key] = {
+                $regex: body.data[key].like
+              };
+            }else if(body.data[key].search){ // 全文搜索
+              obj['$text'] = {
+                $search: body.data[key].search
+              };
+            }else{
+              obj[key] = body.data[key];
+            }
+          }else{
+            obj[key] = {
+              $eq: body.data[key]
+            };
+          }
         }
       }
+      query.where(obj);
     }
-    query.where(obj);
     return query;
   }
 
@@ -304,18 +309,9 @@ class Model {
     }else{
       if (!hasLock.data) {
         const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
-          // data.sort = Object.assign({ rowid: -1 }, data.sort || {});
         if (result.data) {
           let query = result.data;
           if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
-          if (!query.hasKey) {
-            query.select({
-              rowid: 1
-            });
-          } else {
-            query.select(this.select);
-          }
-          query.sort(data.sort);
           if (!Util.isEmpty(this.relation)) query.populate(this.relation);
           const docsResult = await catchErr(query.exec('list'));
           if (docsResult.data) {

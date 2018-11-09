@@ -97,8 +97,8 @@ class Controller {
         limit = Number(body.data.limit) || 20,
         largepage = Number(body.data.largepage) || Math.ceil(page * limit / 20000);
     body.data.largepage = largepage;
-    const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
-    const count = await catchErr(Model.count(body, true));
+    const result = await catchErr(Model.queryList(req, true, this.options.addLock.list));
+    const count = await catchErr(Model.count(req, true));
     if(result.err || count.err){
       res.print(error(result.err || count.err));
     }else{
