@@ -297,14 +297,14 @@ class Model {
 
   // 查询数据列表
   async findList(data, hasCache, addLock = true) {
+    if (!data) throw error('findList方法参数data不能为空');
     let hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
     if(hasLock.err){
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
-        if (!data) throw error('queryList方法参数data不能为空');
-        data.sort = Object.assign({ rowid: -1 }, data.sort || {});
         const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
+          // data.sort = Object.assign({ rowid: -1 }, data.sort || {});
         if (result.data) {
           let query = result.data;
           if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
