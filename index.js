@@ -31,21 +31,22 @@ class App{
       }
       return Controller;
     };
-    this.Model = (key, fields, select) => {
-      if(key){
-        if(this.models.has(key)){
-          return this.models.get(key);
+    this.Model = (tableName, fields, select = {}) => {
+      if(tableName){
+        if(this.models.has(tableName)){
+          return this.models.get(tableName);
         }
-        if(key && fields){
-          let theModel = new Model();
-          theModel.tableName = key;
-          theModel.fields = fields;
-          theModel.select = select || { rowid: -1 };
-          theModel.redis = new Redis.client(key);
-          theModel.db = new Mongo.client(key);
-          this.models.set(key, theModel);
+        if(tableName && fields){
+          let theModel = new Model({
+            tableName,
+            fields,
+            select
+          });
+          theModel.redis = new Redis.client(tableName);
+          theModel.db = new Mongo.client(tableName);
+          this.models.set(tableName, theModel);
           theModel._init();
-          return this.models.get(key);
+          return this.models.get(tableName);
         }
       }
       return Model;
