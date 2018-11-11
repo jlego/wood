@@ -23,6 +23,8 @@ class App{
   constructor(){
     this.models = new Map();
     this.controllers = new Map();
+    this.routes = new Map();
+    this.Router = Router;
     this.Controller = key => {
       if(key && this.controllers.has(key)){
         return this.controllers.get(key);
@@ -58,7 +60,6 @@ class App{
     this.Mongo = Mongo;
     this.Mysql = Mysql;
     this.Redis = Redis;
-    this.Router = Router;
   }
   // 添加中间件
   use(opts){
@@ -100,21 +101,17 @@ class App{
           fileExt = nameArr[1];
         if(fileExt === 'js'){
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
-          switch(type){
-            case 'controller':
-              let controllerName = moduleName.replace('Controller', '');
-              if(!this.controllers.has(controllerName)){
-                this.controllers.set(controllerName, new theModule());
-              }
-              break;
-            case 'model':
-              break;
-            default:
-              app.use('/', theModule);
+          if(type === 'controller') {
+            let controllerName = moduleName.replace('Controller', '');
+            if(!this.controllers.has(controllerName)){
+              this.controllers.set(controllerName, new theModule());
+            }
           }
         }
       });
     });
+    app.use('/', Router);
+
     // 生成api文档
     if(CONFIG.buildDocx){
       const Docx = require('./src/docx');

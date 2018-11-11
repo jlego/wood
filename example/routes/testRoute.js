@@ -15,6 +15,7 @@
  */
 const { Router, Controller } = require('../../index');
 const multipart = require('connect-multiparty');
+const controller = Controller('test');
 
 /**
  * @api {put} /test/list 测试列表
@@ -36,9 +37,9 @@ const multipart = require('connect-multiparty');
  *        }
  *     }
  */
-Router.put('/test/list', Controller('test').list);
+Router.put('/test/list', controller.list.bind(controller));
 
-Router.put('/test/detail', Controller('test').detail);
+Router.put('/test/detail', controller.detail.bind(controller));
 
 /**
  * @api {put} /test/create 新增测试配置
@@ -68,8 +69,8 @@ Router.put('/test/detail', Controller('test').detail);
  *        }]
  *     }
  */
-Router.put('/test/create', Controller('test').create);
+Router.put('/test/create', controller.create.bind(controller));
 
-Router.put('/test/remove', Controller('test').remove);
+Router.put('/test/remove', controller.remove.bind(controller));
 
 module.exports = Router;
