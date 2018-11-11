@@ -6,6 +6,15 @@ moment.locale('zh-cn');
 
 module.exports = {
   moment,
+  // 获取参数
+  getParams(req){
+    if(req.method == 'GET'){
+      return req.query;
+    }else{
+      return req.body;
+    }
+    return {};
+  },
   // 返回错误
   error(err) {
     let result = JSON.parse(JSON.stringify(CONFIG.error_code.error));

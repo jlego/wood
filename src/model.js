@@ -14,23 +14,8 @@ const _timeout = 0;
 const _KeyTimeout = 60 * 1; //设置listkey过期时间，秒
 
 class Model {
-  constructor(ctx) {
-    this.ctx = ctx;
-    return Object.create(this, this._get());
-  }
-  // 定义数据表
-  define(tableName, fields, select){
-    if (!fields || typeof !== 'object') console.error('fields不能为空');
-    if(!this.ctx._models.has(tableName)){
-      let theModel = new Model(tableName, this.ctx);
-      theModel.fields = fields;
-      theModel.select = select || { rowid: -1 };
-      theModel.redis = new Redis.client(tableName);
-      theModel.db = new Mongo.client(tableName);
-      tableName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1); //首字母大写
-      this.ctx._models.set(tableName, theModel);
-      this._init();
-    }
+  constructor(opts = {}) {
+    this.fields = {...opts.fields || {}};
   }
 
   _toPromise(val){
@@ -40,13 +25,17 @@ class Model {
   }
 
   // 设置getter和setter
-  _get() {
-    let obj = {}, models = this.ctx._models;
-    for (let key of models) {
+  _get_set() {
+    let obj = {}, fieldMap = this.fields.fieldMap;
+    for (let key in fieldMap) {
       obj[key] = {
         get() {
           if (CONFIG.isDebug) console.warn(`getter: ${key}`);
-          return models.get(key);
+          return fieldMap[key].value || fieldMap[key].defaultValue;
+        },
+        set(val) {
+          if (CONFIG.isDebug) console.warn(`setter: ${key}, ${val}`);
+          fieldMap[key].value = val;
         }
       }
     }
@@ -74,6 +63,7 @@ class Model {
         }
       }
     }
+    return Object.create(this, this._get_set());
   }
 
   // 创建索引
@@ -103,9 +93,8 @@ class Model {
 
   // 查询条件对象
   async query(req = {}, clearListKey) {
-    let where = {}, body = req && req.body ? req.body : req;
+    let where = {}, body = Util.getParams(req);
     if(body && body.data){
-      data = body.data;
       let limit = body.data.limit == undefined ? 20 : Number(body.data.limit),
         page = body.data.page || 1;
       where = body.data.where || {};
@@ -255,7 +244,7 @@ class Model {
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
-        let query = data._isQuery ? data : this.db.query();
+        let query = data._isQuery ? data : this.query();
         if (typeof data === 'number') {
           query.where({
             rowid: data

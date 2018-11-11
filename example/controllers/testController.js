@@ -1,38 +1,35 @@
 const {
   Controller,
+  Model,
   error,
   catchErr,
   Token,
   Util
 } = require('../../index');
-const TestModel = require('../models/testModel');
+const controller = Controller();
 
-class TestController extends Controller {
-  constructor(opts = {}) {
+class TestController extends controller {
+  constructor() {
     super({
-      model: TestModel,
-      parse: {
-        input: (req, key) => {
-
-        },
-        output: (req, data, key) => {
-          return data;
-        }
-      },
-      ...opts
+      defaultModel: 'tests'
     });
   }
-  async list(req, res, next) {
-    let Model = new TestModel({}, {
-      select: {
-        _id: 0,
-        options: 0
-      }
-    }),
-    body = this.getParams(req);
-    // res.print(body);
-    res.print(error('aaaaaaaaaaaaaa'));
-    // res.print(error('bbbbbbbbbbbbbbbb'));
+  async create(req, res, next) {
+    // let query = Model('tests').query(req).select({
+    //   _id: 0,
+    //   options: 0
+    // }),
+    // body = this.getParams(req);
+    console.warn('=========', this);
+    // const result = await catchErr(Model.create({
+    //   title: '小明',
+    //   subData: [{
+    //     key: '1',
+    //     value: '名字'
+    //   }]
+    // }));
+    // res.print(result);
+    res.print(error('bbbbbbbbbbbbbbbb'));
     // Model.setData({
     //   creator: {
     //     uid: "2222",
@@ -41,7 +38,7 @@ class TestController extends Controller {
     // });
     // const result = await catchErr(Model.save());
     // console.warn(Model.getData());
-    // const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
+    // const result = await catchErr(Model.findList(body.data, true));
     // if(result.err){
     //   res.print(error(result.err));
     // }else{
@@ -50,4 +47,4 @@ class TestController extends Controller {
   }
 }
 
-module.exports = new TestController();
+module.exports = TestController;

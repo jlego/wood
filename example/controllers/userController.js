@@ -5,15 +5,14 @@ const {
   Token,
   Util
 } = require('../../index');
-const UserModel = require('../models/userModel');
+const controller = Controller();
 
-class UserController extends Controller {
-  constructor(opts = {}) {
+class UserController extends controller {
+  constructor() {
     super({
-      model: UserModel,
-      ...opts
+      defaultModel: 'users'
     });
   }
 }
 
-module.exports = new UserController();
+module.exports = UserController;
