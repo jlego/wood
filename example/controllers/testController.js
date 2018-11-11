@@ -9,27 +9,17 @@ const {
 const controller = Controller();
 
 class TestController extends controller {
-  constructor() {
-    super({
-      defaultModel: 'tests'
-    });
-  }
   async create(req, res, next) {
-    // let query = Model('tests').query(req).select({
-    //   _id: 0,
-    //   options: 0
-    // }),
-    // body = this.getParams(req);
-    console.warn('=========', this);
-    // const result = await catchErr(Model.create({
-    //   title: '小明',
-    //   subData: [{
-    //     key: '1',
-    //     value: '名字'
-    //   }]
-    // }));
-    // res.print(result);
-    res.print(error('bbbbbbbbbbbbbbbb'));
+    let query = Model('tests').query(req).select({ _id: 0, options: 0 });
+    const result = await catchErr(Model('tests').create({
+      title: '小明',
+      subData: [{
+        key: '1',
+        value: '名字'
+      }]
+    }));
+    res.print(result);
+    // res.print(error('bbbbbbbbbbbbbbbb'));
     // Model.setData({
     //   creator: {
     //     uid: "2222",
@@ -47,4 +37,6 @@ class TestController extends controller {
   }
 }
 
-module.exports = TestController;
+module.exports = new TestController({
+  defaultModel: 'test'
+});

@@ -16,14 +16,8 @@ const _KeyTimeout = 60 * 1; //设置listkey过期时间，秒
 class Model {
   constructor(opts = {}) {
     this.tableName = opts.tableName;
-    this.fields = {...opts.fields || {}};
-    this.select = {...opts.select || {}};
-  }
-
-  _toPromise(val){
-    return new Promise((resolve, reject) => {
-      resolve(val);
-    });
+    this.fields = opts.fields || {};
+    this.select = opts.select || {};
   }
 
   // 设置getter和setter
@@ -45,7 +39,7 @@ class Model {
   }
 
   _init() {
-    let fields = this.fields.data;
+    let fields = this.fields.data || {};
     for (let key in fields) {
       let item = fields[key];
       if (key == '_id') continue;
@@ -91,66 +85,6 @@ class Model {
   // 是否新的
   isNew() {
     return !this.rowid;
-  }
-
-  // 查询条件对象
-  async query(req = {}, clearListKey) {
-    let where = {}, body = Util.getParams(req);
-    if(body && body.data){
-      let limit = body.data.limit == undefined ? 20 : Number(body.data.limit),
-        page = body.data.page || 1;
-      where = body.data.where || {};
-      body.data.largepage = body.data.largepage || 1;
-      page = page % Math.ceil(largelimit / limit) || 1;
-      let listKey = '', hasKey = false;
-      if(req.url){
-        listKey = await Util.getListKey(req); //生成listkey
-        hasKey = await this.redis.existKey(listKey); //key是否存在
-        if (clearListKey && hasKey) {
-          await this.redis.delKey(listKey); //删除已有的key
-          hasKey = false;
-        }
-        if (hasKey) {
-          let startIndex = (page - 1) * limit;
-          body.data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
-          body.data.rowid = body.data.rowid.map(item => parseInt(item));
-        }
-      }
-    }
-    let query = this.db.query({ where });
-    query.listKey = listKey;
-    query.hasKey = hasKey;
-    if(!Util.isEmpty(body)){
-      let obj = {};
-      for (let key in body) {
-        if (!this.fields.data[key]) continue;
-        if (Array.isArray(body.data[key])) {
-          obj[key] = {
-            $in: body.data[key]
-          };
-        } else {
-          if(typeof body.data[key] == 'object'){
-            if(body.data[key].like){ // 模糊查询
-              obj[key] = {
-                $regex: body.data[key].like
-              };
-            }else if(body.data[key].search){ // 全文搜索
-              obj['$text'] = {
-                $search: body.data[key].search
-              };
-            }else{
-              obj[key] = body.data[key];
-            }
-          }else{
-            obj[key] = {
-              $eq: body.data[key]
-            };
-          }
-        }
-      }
-      query.where(obj);
-    }
-    return query;
   }
 
   //新增数据
@@ -239,6 +173,45 @@ class Model {
     }
   }
 
+  // 查询条件对象
+  query(req = {}) {
+    let where = {}, body = Util.getParams(req);
+    if(body && body.data) where = body.data.where || {};
+    let query = this.db.query({ where });
+    if(!Util.isEmpty(body)){
+      let obj = {};
+      for (let key in body) {
+        if (!this.fields.data[key]) continue;
+        if (Array.isArray(body.data[key])) {
+          obj[key] = {
+            $in: body.data[key]
+          };
+        } else {
+          if(typeof body.data[key] == 'object'){
+            if(body.data[key].like){ // 模糊查询
+              obj[key] = {
+                $regex: body.data[key].like
+              };
+            }else if(body.data[key].search){ // 全文搜索
+              obj['$text'] = {
+                $search: body.data[key].search
+              };
+            }else{
+              obj[key] = body.data[key];
+            }
+          }else{
+            obj[key] = {
+              $eq: body.data[key]
+            };
+          }
+        }
+      }
+      query.where(obj);
+    }
+    query.req = req;
+    return query;
+  }
+
   // 查询单条记录
   async findOne(data, addLock = true) {
     const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {};
@@ -268,29 +241,6 @@ class Model {
     }
   }
 
-  // 计算总记录数
-  async count(data, hasCache) {
-    if (!data) throw error('count方法参数data不能为空');
-    const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
-    if (result.data) {
-      let query = result.data;
-      let theKey = query.listKey + '_count',
-        count = 0;
-      if(!hasCache) await this.redis.delKey(theKey);
-      if (await this.redis.existKey(theKey)) {
-        if (CONFIG.isDebug) console.warn('已有count');
-        count = await this.redis.getValue(theKey);
-      } else {
-        count = await this.db.count(query);
-        this.redis.setValue(theKey, count);
-        this.redis.setKeyTimeout(theKey, _KeyTimeout);
-      }
-      return Number(count);
-    } else {
-      throw error(result.err);
-    }
-  }
-
   // 查询数据列表
   async findList(data, hasCache, addLock = true) {
     if (!data) throw error('findList方法参数data不能为空');
@@ -299,32 +249,54 @@ class Model {
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
-        const result = await catchErr(data._isQuery ? this._toPromise(data) : this.query(data, hasCache));
-        if (result.data) {
-          let query = result.data;
-          if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
-          if (!Util.isEmpty(this.relation)) query.populate(this.relation);
-          const docsResult = await catchErr(query.exec('list'));
-          if (docsResult.data) {
-            let docs = docsResult.data;
-            // 缓存rowid
-            if (!query.hasKey && docs.length) {
-              if (docs.length >= largelimit) {
-                data.largepage = data.largepage || 1;
-                let startNum = (data.largepage - 1) * largelimit;
-                docs = docs.slice(startNum, startNum + largelimit);
-              }
-              await this.redis.listPush(query.listKey, docs.map(item => item.rowid));
-              this.redis.setKeyTimeout(query.listKey, _KeyTimeout); //设置listkey一小时后过期
-              return this.findList(data, false, addLock);
-            } else {
-              return docs;
+        let query = {}, listKey = '', hasKey = false;
+        if(data._isQuery){
+          query = data;
+        }else{
+          query = this.query();
+          let limit = data.limit == undefined ? 20 : Number(data.limit),
+            page = data.page || 1;
+          data.largepage = data.largepage || 1;
+          page = page % Math.ceil(largelimit / limit) || 1;
+          if(query.req && query.req.url){
+            listKey = await Util.getListKey(query.req); //生成listkey
+            hasKey = await this.redis.existKey(listKey); //key是否存在
+            if (!hasCache && hasKey) {
+              await this.redis.delKey(listKey); //删除已有的key
+              hasKey = false;
             }
-          } else {
-            throw error(docsResult.err);
+            if (hasKey) {
+              let startIndex = (page - 1) * limit;
+              data.rowid = await this.redis.listSlice(listKey, startIndex, startIndex + limit - 1);
+              data.rowid = data.rowid.map(item => parseInt(item));
+            }
           }
-        } else {
-          throw error(result.err);
+          query.where(data);
+        }
+        if (CONFIG.isDebug) console.warn(`请求列表, ${hasKey ? '有' : '无'}listKey`);
+        if (!Util.isEmpty(this.relation)) query.populate(this.relation);
+        const countResult = await catchErr(this.db.count(query));
+        const docsResult = await catchErr(query.exec('list'));
+        if (docsResult.err || countResult.err) {
+          throw error(docsResult.err || countResult.err);
+        }else{
+          let docs = docsResult.data;
+          // 缓存rowid
+          if (!query.hasKey && docs.length) {
+            if (docs.length >= largelimit) {
+              data.largepage = data.largepage || 1;
+              let startNum = (data.largepage - 1) * largelimit;
+              docs = docs.slice(startNum, startNum + largelimit);
+            }
+            await this.redis.listPush(query.listKey, docs.map(item => item.rowid));
+            this.redis.setKeyTimeout(query.listKey, _KeyTimeout); //设置listkey一小时后过期
+            return this.findList(data, false, addLock);
+          } else {
+            return {
+              count: Number(countResult.data),
+              list: docs || []
+            };
+          }
         }
         return [];
       }else{

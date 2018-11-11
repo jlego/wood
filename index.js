@@ -25,7 +25,7 @@ class App{
     this.controllers = new Map();
     this.routes = new Map();
     this.Router = Router;
-    this.Controller = name => {
+    this.Controller = (name) => {
       if(name && this.controllers.has(name)){
         return this.controllers.get(name);
       }
@@ -105,7 +105,8 @@ class App{
           if(type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
             if(!this.controllers.has(controllerName)){
-              this.controllers.set(controllerName, new theModule());
+              theModule = typeof theModule === 'function' ? new theModule() : theModule;
+              this.controllers.set(controllerName, theModule);
             }
           }
         }

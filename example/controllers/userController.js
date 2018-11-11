@@ -5,7 +5,7 @@ const {
   Token,
   Util
 } = require('../../index');
-const controller = Controller();
+const controller = Controller().defaultModel('user');
 
 class UserController extends controller {
   constructor() {
