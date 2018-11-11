@@ -173,45 +173,6 @@ class Model {
     }
   }
 
-  // 查询条件对象
-  query(req = {}) {
-    let where = {}, body = Util.getParams(req);
-    if(body && body.data) where = body.data.where || {};
-    let query = this.db.query({ where });
-    if(!Util.isEmpty(body)){
-      let obj = {};
-      for (let key in body) {
-        if (!this.fields.data[key]) continue;
-        if (Array.isArray(body.data[key])) {
-          obj[key] = {
-            $in: body.data[key]
-          };
-        } else {
-          if(typeof body.data[key] == 'object'){
-            if(body.data[key].like){ // 模糊查询
-              obj[key] = {
-                $regex: body.data[key].like
-              };
-            }else if(body.data[key].search){ // 全文搜索
-              obj['$text'] = {
-                $search: body.data[key].search
-              };
-            }else{
-              obj[key] = body.data[key];
-            }
-          }else{
-            obj[key] = {
-              $eq: body.data[key]
-            };
-          }
-        }
-      }
-      query.where(obj);
-    }
-    query.req = req;
-    return query;
-  }
-
   // 查询单条记录
   async findOne(data, addLock = true) {
     const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {};

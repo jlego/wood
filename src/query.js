@@ -1,5 +1,7 @@
 // 查询对象类
 // by YuRonghui 2018-2-6
+const { getParams } = require('./util');
+
 class Query {
   constructor(params = {}, db) {
     this.db = db;
@@ -17,6 +19,43 @@ class Query {
       aggregate: [],
       ...params
     };
+  }
+  // 查询条件对象
+  query(req = {}) {
+    let where = {}, body = getParams(req);
+    if(body && body.data) where = body.data.where || {};
+    let query = this.db.query({ where });
+    if(!Util.isEmpty(body)){
+      let obj = {};
+      for (let key in body) {
+        if (Array.isArray(body.data[key])) {
+          obj[key] = {
+            $in: body.data[key]
+          };
+        } else {
+          if(typeof body.data[key] == 'object'){
+            if(body.data[key].like){ // 模糊查询
+              obj[key] = {
+                $regex: body.data[key].like
+              };
+            }else if(body.data[key].search){ // 全文搜索
+              obj['$text'] = {
+                $search: body.data[key].search
+              };
+            }else{
+              obj[key] = body.data[key];
+            }
+          }else{
+            obj[key] = {
+              $eq: body.data[key]
+            };
+          }
+        }
+      }
+      query.where(obj);
+    }
+    query.req = req;
+    return query;
   }
   where(params = {}) {
     Object.assign(this.query.where, params);
