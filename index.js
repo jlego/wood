@@ -1,5 +1,5 @@
 // 入口文件
-// by YuRonghui 2018-4-12
+// by YuRonghui 2018-11-11
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -60,15 +60,15 @@ class App{
     this.Redis = Redis;
     this.Router = Router;
   }
-
-  addMiddleware(opts){
+  // 添加中间件
+  use(opts){
     if(typeof opts === 'object'){
       Object.assign(Middlewares, opts);
     }else if(typeof opts === 'function'){
       Middlewares[opts.name] = opts;
     }
   }
-
+  // 初始化应用
   init() {
     const app = express();
     if(!CONFIG.isDebug) app.set('env', 'production');
@@ -86,7 +86,7 @@ class App{
           next();
         });
     }
-    // 中间件
+    // 内置中间件
     app.use(Middlewares.responseFormat);
     app.use(Middlewares.requestBody);
 
@@ -115,7 +115,7 @@ class App{
         }
       });
     });
-
+    // 生成api文档
     if(CONFIG.buildDocx){
       const Docx = require('./src/docx');
       app.use('/', Router.get(Docx.path, Docx.fun));
@@ -140,7 +140,7 @@ class App{
       console.log('Caught exception: ', err);
     });
 
-    // 监听服务
+    // 监听服务端口
     const httpServer = app.listen(
       CONFIG.service.http_server.listenport,
       function() {
@@ -150,7 +150,7 @@ class App{
       }
     );
   }
-
+  // 启动
   start(opts) {
     let that = this;
     if(opts) Object.assign(CONFIG, opts);
