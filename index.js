@@ -25,9 +25,9 @@ class App{
     this.controllers = new Map();
     this.routes = new Map();
     this.Router = Router;
-    this.Controller = key => {
-      if(key && this.controllers.has(key)){
-        return this.controllers.get(key);
+    this.Controller = name => {
+      if(name && this.controllers.has(name)){
+        return this.controllers.get(name);
       }
       return Controller;
     };
