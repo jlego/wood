@@ -6,6 +6,8 @@ const Query = require('./query');
 class Controller {
   constructor(opts = {}) {
     this.defaultModel = opts.defaultModel || '';
+    this.addLock = opts.addLock || true;
+    this.hasCheck = opts.hasCheck || true;
   }
   //列表
   async list(req, res, next) {
@@ -16,7 +18,7 @@ class Controller {
         largepage = Number(body.data.largepage) || Math.ceil(page * limit / 20000);
     body.data.largepage = largepage;
     let query = Query.getQuery(req).limit(limit);
-    const result = await catchErr(Model.findList(query));
+    const result = await catchErr(Model.findList(query, this.addLock));
     if(result.err){
       res.print(result);
     }else{
@@ -44,7 +46,7 @@ class Controller {
         body = getParams(req),
         result = {};
     if(Array.isArray(body.data)){
-      result = await catchErr(Model.create(body.data));
+      result = await catchErr(Model.create(body.data, this.addLock, this.hasCheck));
     }else{
       Model.setData(body.data);
       result = await catchErr(Model.save());
@@ -59,7 +61,7 @@ class Controller {
       let allResult = {};
       for(let i = 0; i < body.data.length; i++){
         delete body.data[i].updateTime;
-        let result = await catchErr(Model.update(body.data[i], false));
+        let result = await catchErr(Model.update(body.data[i], this.addLock, this.hasCheck));
         if(result.err) {
           allResult.err = result.err;
           break;
@@ -71,7 +73,7 @@ class Controller {
       res.print(allResult);
     }else{
       delete body.data.updateTime;
-      const result = await catchErr(Model.update(body.data, false));
+      const result = await catchErr(Model.update(body.data, this.addLock, this.hasCheck));
       res.print(result);
     }
   }
@@ -87,7 +89,7 @@ class Controller {
     let Model = CTX.models.get(this.defaultModel),
         body = getParams(req);
     body.data.status = -1;
-    const result = await catchErr(Model.update(body.data, false));
+    const result = await catchErr(Model.update(body.data, this.addLock, this.hasCheck));
     res.print(result);
   }
 }

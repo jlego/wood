@@ -17,7 +17,7 @@ const _KeyTimeout = 60 * 1; //设置listkey过期时间，秒
 
 class Model {
   constructor(opts = {}) {
-    this.tableName = opts.tableName;
+    this.tableName = opts.tableName || '';
     this.fields = opts.fields || {};
     this.select = opts.select || {};
     this.relation = {};
