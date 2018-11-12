@@ -24,7 +24,7 @@ class TestController extends controller {
     let body = Util.getParams(req),
         page = Number(body.data.page) || 1;
     let query = Query(req).limit(3).select({subdata: 0});
-    const result = await catchErr(Model('tests').findList(query));
+    const result = await catchErr(Model('tests').findList(query, false));
     if(result.err){
       res.print(result);
     }else{

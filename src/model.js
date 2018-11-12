@@ -195,7 +195,7 @@ class Model {
         }
         query.select(this.select);
         if (!isEmpty(this.relation)) query.populate(this.relation);
-        let result = catchErr(this.exec('findOne', query.toJSON()));
+        let result = await catchErr(this.exec('findOne', query.toJSON()));
         if(result.err){
           throw error(result.err);
         }else{
