@@ -101,7 +101,10 @@ class Model {
       if (err) throw error(err);
       const lock = await catchErr(this.redis.lock());
       if (lock.data) {
-        return this.db.create(this.getData());
+        let result = await catchErr(this.db.create(this.getData()));
+        this.redis.unlock(lock.data);
+        if(result.err) throw error(result.err);
+        return result.data;
       }else{
         throw error(lock.err);
       }
@@ -120,19 +123,20 @@ class Model {
       if (err) {
         throw error(err);
       } else {
-        let isLock = await catchErr(this.redis.lock());
-        if (isLock.data) {
+        let lock = await catchErr(this.redis.lock());
+        if (lock.data) {
           delete data.rowid;
           let keys = Object.keys(data);
           hasSet = keys[0].indexOf('$') === 0;
           const result = await catchErr(this.db.update({ rowid }, hasSet ? data : { $set: data }));
+          this.redis.unlock(lock.data);
           if (result.data){
             return { rowid };
           }else{
             throw error(result.err);
           }
         }else{
-          throw error(isLock.err);
+          throw error(lock.err);
         }
       }
     }
@@ -158,10 +162,10 @@ class Model {
   async remove(data) {
     if (!data) return false;
     const lock = await catchErr(this.redis.lock());
-    if (lock.data) {
-      return this.db.remove(data);
-    }else{
+    if (lock.err) {
       throw error(lock.err);
+    }else{
+      return this.db.remove(data);
     }
   }
 
