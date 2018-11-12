@@ -90,19 +90,19 @@ class Model {
   }
 
   //新增数据
-  async create(data) {
+  async create(data, addLock = true, hascheck = true) {
     if (!data) throw error('create方法的参数data不能为空');
     let rowid = await this.redis.rowid();
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
       data.rowid = rowid;
       this.setData(data);
-      let err = this.fields.validate();
+      let err = hascheck ? this.fields.validate() : false;
       if (err) throw error(err);
-      const lock = await catchErr(this.redis.lock());
+      const lock = addLock ? await catchErr(this.redis.lock()) : {data: 1};
       if (lock.data) {
         let result = await catchErr(this.db.create(this.getData()));
-        this.redis.unlock(lock.data);
+        if(addLock) this.redis.unlock(lock.data);
         if(result.err) throw error(result.err);
         return result.data;
       }else{
@@ -113,23 +113,22 @@ class Model {
   }
 
   // 更新数据
-  async update(data, required = false) {
+  async update(data, addLock = true, hascheck = true) {
     if (!data) throw error('update方法的参数data不能为空');
     if (!this.isNew() || data.rowid) {
-      let err = this.fields.validate(),
+      let err = hascheck ? this.fields.validate() : false,
         hasSet = false,
         rowid = this.rowid || data.rowid;
-      if (!required) err = false;
       if (err) {
         throw error(err);
       } else {
-        let lock = await catchErr(this.redis.lock());
+        let lock = addLock ? await catchErr(this.redis.lock()) : {data: 1};
         if (lock.data) {
           delete data.rowid;
           let keys = Object.keys(data);
           hasSet = keys[0].indexOf('$') === 0;
           const result = await catchErr(this.db.update({ rowid }, hasSet ? data : { $set: data }));
-          this.redis.unlock(lock.data);
+          if(addLock) this.redis.unlock(lock.data);
           if (result.data){
             return { rowid };
           }else{
@@ -172,10 +171,10 @@ class Model {
   //清空数据
   async clear() {
     const lock = await catchErr(this.redis.lock());
-    if (lock.data) {
-      return this.db.clear();
-    }else{
+    if (lock.err) {
       throw error(lock.err);
+    }else{
+      return this.db.clear();
     }
   }
 
@@ -229,7 +228,7 @@ class Model {
   // 查询数据列表
   async findList(data, hasCache = true, addLock = true) {
     if (!data) throw error('findList方法参数data不能为空');
-    let hasLock = addLock ? await catchErr(this.redis.hasLock()) : {data: 0};
+    let hasLock = addLock ? await catchErr(this.redis.hasLock()) : {};
     if(hasLock.err){
       throw error(hasLock.err);
     }else{
