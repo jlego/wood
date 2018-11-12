@@ -112,7 +112,6 @@ module.exports = {
     }
   },
   start(opts) {
-    let that = this;
     if(opts) Object.assign(global.CONFIG, opts);
     if(!Util.isEmpty(global.CONFIG)){
       const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
