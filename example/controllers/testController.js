@@ -3,6 +3,7 @@ const {
   Model,
   error,
   catchErr,
+  Mongo,
   Query,
   Util
 } = require('../../index');
@@ -23,8 +24,8 @@ class TestController extends controller {
   async list(req, res, next) {
     let body = Util.getParams(req),
         page = Number(body.data.page) || 1;
-    let query = Query(req).limit(3).select({subdata: 0});
-    const result = await catchErr(Model('tests').findList(query, false));
+    let query = Query(req).limit(3).select({subData: 0});
+    const result = await catchErr(Model('tests').findList(query));
     if(result.err){
       res.print(result);
     }else{
@@ -34,10 +35,12 @@ class TestController extends controller {
         page: page
       });
     }
+    // const result = await catchErr(new Mongo('tests').find(body.data));
+    // res.print(result);
   }
 
   async detail(req, res, next) {
-    let query = Query(req).select({subdata: 0});
+    let query = Query(req).select({subData: 0});
     const result = await catchErr(Model('tests').findOne(query));
     res.print(result);
   }
