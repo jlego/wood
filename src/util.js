@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const moment = require('moment');
 moment.locale('zh-cn');
 
-module.exports = {
+let Util = {
   moment,
   // 获取参数
   getParams(req){
@@ -54,7 +54,7 @@ module.exports = {
   },
   // 生成表查询条件listkey
   getListKey(req) {
-    let data = this.deepCopy(req.body);
+    let data = Util.deepCopy(req.body);
     delete data.data.limit;
     delete data.data.page;
     let arr = [];
@@ -63,7 +63,7 @@ module.exports = {
     }
     arr.push(`url=${req.url}`);
     arr.sort();
-    return this.md5(arr.join('&'));
+    return Util.md5(arr.join('&'));
   },
   // 深拷贝
   deepCopy(obj){
@@ -74,7 +74,7 @@ module.exports = {
     //   newobj = JSON.parse(JSON.stringify(obj));
     } else {
       for(let i in obj){
-        newobj[i] = typeof obj[i] === 'object' && !(obj[i] instanceof Date) ? this.deepCopy(obj[i]) : obj[i];
+        newobj[i] = typeof obj[i] === 'object' && !(obj[i] instanceof Date) ? Util.deepCopy(obj[i]) : obj[i];
       }
     }
     return newobj;
@@ -102,7 +102,7 @@ module.exports = {
       if(!Array.isArray(obj)){
         let newObj = {};
         for(let key in obj){
-          let newKey = isLower ? this.firstLowerCase(key, otherIsLower) : this.firstUpperCase(key, otherIsLower);
+          let newKey = isLower ? Util.firstLowerCase(key, otherIsLower) : Util.firstUpperCase(key, otherIsLower);
           newObj[newKey] = obj[key];
         }
         return newObj;
@@ -137,3 +137,5 @@ module.exports = {
     return str ? str.replace(/<[^>]+>/g,"") : '';
   }
 };
+
+module.exports = Util;

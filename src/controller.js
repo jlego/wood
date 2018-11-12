@@ -1,33 +1,26 @@
 // 控制器基类
 // by YuRonghui 2018-4-12
 const { error, catchErr, getParams } = require('./util');
-let _defaultModel = '';
+const Query = require('./query');
 
 class Controller {
   constructor(opts = {}) {
-    _defaultModel = opts.defaultModel || '';
-  }
-  static defaultModel(name){
-    if(name) _defaultModel = name;
-    return Controller;
-  }
-  // 获取参数
-  getParams(req){
-    return getParams(req);
+    this.defaultModel = opts.defaultModel || '';
   }
   //列表
   async list(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req),
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req),
         page = Number(body.data.page) || 1,
         limit = Number(body.data.limit) || 20,
         largepage = Number(body.data.largepage) || Math.ceil(page * limit / 20000);
     body.data.largepage = largepage;
-    const result = await catchErr(Model.queryList(req, true, this.addLock));
+    let query = Query.getQuery(req).limit(limit);
+    const result = await catchErr(Model.findList(query));
     if(result.err){
-      res.print(error(result.err));
+      res.print(result);
     }else{
-      let totalpage = Math.ceil(Number(count.data) / Number(body.data.limit || 20)) || 1;
+      let totalpage = Math.ceil(Number(result.data.count) / Number(body.data.limit || 20)) || 1;
       res.print({
         list: result.data.list,
         page: page,
@@ -40,15 +33,15 @@ class Controller {
   }
   //详情
   async detail(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req);
-    const result = await catchErr(Model.queryOne(body.data, this.addLock));
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req);
+    const result = await catchErr(Model.findOne(body.data, this.addLock));
     res.print(result);
   }
   //新增
   async create(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req),
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req),
         result = {};
     if(Array.isArray(body.data)){
       result = await catchErr(Model.create(body.data));
@@ -60,8 +53,8 @@ class Controller {
   }
   //修改
   async update(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req);
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req);
     if(Array.isArray(body.data)){
       let allResult = {};
       for(let i = 0; i < body.data.length; i++){
@@ -84,15 +77,15 @@ class Controller {
   }
   // 删除
   async remove(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req);
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req);
     const result = await catchErr(Model.remove(body.data));
     res.print(result);
   }
   // 软删除
   async softRemove(req, res, next) {
-    let Model = CTX.models.get(_defaultModel),
-        body = this.getParams(req);
+    let Model = CTX.models.get(this.defaultModel),
+        body = getParams(req);
     body.data.status = -1;
     const result = await catchErr(Model.update(body.data, false));
     res.print(result);

@@ -14,43 +14,17 @@ const Util = require('./src/util');
 const Middlewares = require('./src/middleware');
 const Model = require('./src/model');
 const Controller = require('./src/controller');
+const Query = require('./src/query');
 const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
-const { error, catchErr } = Util;
+const { error, catchErr, isEmpty } = Util;
+const models = new Map();
+const controllers = new Map();
 
 class App{
   constructor(){
-    this.models = new Map();
-    this.controllers = new Map();
-    this.routes = new Map();
     this.Router = Router;
-    this.Controller = (name) => {
-      if(name && this.controllers.has(name)){
-        return this.controllers.get(name);
-      }
-      return Controller;
-    };
-    this.Model = (tableName, fields, select = {}) => {
-      if(tableName){
-        if(this.models.has(tableName)){
-          return this.models.get(tableName);
-        }
-        if(tableName && fields){
-          let theModel = new Model({
-            tableName,
-            fields,
-            select
-          });
-          theModel.redis = new Redis.client(tableName);
-          theModel.db = new Mongo.client(tableName);
-          this.models.set(tableName, theModel);
-          theModel._init();
-          return this.models.get(tableName);
-        }
-      }
-      return Model;
-    };
     this.Fields = Fields;
     this.Modelsql = Modelsql;
     this.Tcp = Tcp;
@@ -61,6 +35,38 @@ class App{
     this.Mongo = Mongo;
     this.Mysql = Mysql;
     this.Redis = Redis;
+    this.models = models;
+    this.controllers = controllers;
+  }
+  // 查询条件对象
+  Query(req = {}) {
+    return Query.getQuery(req);
+  }
+  Controller(name) {
+    if(name && controllers.has(name)){
+      return controllers.get(name);
+    }
+    return Controller;
+  }
+  Model(tableName, fields, select = {}) {
+    if(tableName){
+      if(models.has(tableName)){
+        return models.get(tableName);
+      }
+      if(tableName && fields){
+        let theModel = new Model({
+          tableName,
+          fields,
+          select
+        });
+        theModel.redis = new Redis(tableName);
+        theModel.db = new Mongo(tableName);
+        models.set(tableName, theModel);
+        theModel._init();
+        return models.get(tableName);
+      }
+    }
+    return Model;
   }
   // 添加中间件
   use(opts){
@@ -104,9 +110,9 @@ class App{
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
           if(type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-            if(!this.controllers.has(controllerName)){
+            if(!controllers.has(controllerName)){
               theModule = typeof theModule === 'function' ? new theModule() : theModule;
-              this.controllers.set(controllerName, theModule);
+              controllers.set(controllerName, theModule);
             }
           }
         }
@@ -153,7 +159,7 @@ class App{
   start(opts) {
     let that = this;
     if(opts) Object.assign(CONFIG, opts);
-    if(!Util.isEmpty(CONFIG)){
+    if(!isEmpty(CONFIG)){
       const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
       if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);

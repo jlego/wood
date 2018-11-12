@@ -2,13 +2,13 @@
 // by YuRonghui 2018-2-1
 const redis = require("redis");
 const RedLock = require('redlock-node');
-const Util = require('./util');
+const {catchErr, error} = require('./util');
 let db = null, redlock = null;
 
 class Redis {
   constructor(tbname) {
     this.tbname = tbname;
-    if(!db) throw Util.error('redis failed: db=null');
+    if(!db) throw error('redis failed: db=null');
   }
   getKey(key){
     let str = `${CONFIG.projectName}:${this.tbname}`;
@@ -52,7 +52,7 @@ class Redis {
   lock(timeout = 1) {
     let that = this;
     return new Promise(async (resolve, reject) => {
-      let hasLock = await Util.catchErr(that.hasLock());
+      let hasLock = await catchErr(that.hasLock());
       if(hasLock.err){
         reject(hasLock.err);
       }else{
@@ -60,7 +60,7 @@ class Redis {
           redlock.lock(this.getKey('lock'), timeout, (err, lockInstance) => {
             if (lockInstance === null) {
               setTimeout(() => {
-                Util.catchErr(that.lock(timeout));
+                catchErr(that.lock(timeout));
               }, 20);
             } else {
               resolve(true);
@@ -169,13 +169,9 @@ class Redis {
       });
     });
   }
-}
-
-module.exports = {
-  client: Redis,
-  connect(opts = {}, onConnect, onError) {
+  static connect(opts = {}, onConnect, onError) {
     if(!opts.db) opts.db = opts.dbnum;
-    this.db = db = redis.createClient(opts.port, opts.host);
+    Redis.db = db = redis.createClient(opts.port, opts.host);
     db.select(opts.db, function () {
       console.log('Redis select', opts.db, 'db');
     });
@@ -188,8 +184,10 @@ module.exports = {
       console.log('Redis proxy error:' + error);
       if(onError) onError(error, db);
     });
-  },
-  close() {
+  }
+  static close() {
     db.quit();
   }
-};
+}
+
+module.exports = Redis;

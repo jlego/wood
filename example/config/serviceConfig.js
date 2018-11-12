@@ -3,7 +3,7 @@ module.exports = {
     cpus: 2,
   },
   http_server: {
-    listenport: 3003
+    listenport: 3004
   },
   initloop: {
     workerid: 1
