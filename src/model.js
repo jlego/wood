@@ -185,15 +185,18 @@ class Model {
       throw error(hasLock.err);
     }else{
       if (!hasLock.data) {
-        let query = data._isQuery ? data : Query.getQuery();
-        if (typeof data === 'number') {
-          query.where({
-            rowid: data
-          });
-        } else if (typeof data === 'object') {
-          query.where(data);
+        let query = data;
+        if(!data._isQuery){
+          query = Query.getQuery();
+          if (typeof data === 'number') {
+            query.where({
+              rowid: data
+            });
+          } else if (typeof data === 'object') {
+            query.where(data);
+          }
         }
-        query.select(this.select);
+        if (!isEmpty(this.select)) query.select(this.select);
         if (!isEmpty(this.relation)) query.populate(this.relation);
         let result = await catchErr(this.exec('findOne', query.toJSON()));
         if(result.err){

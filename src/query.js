@@ -26,7 +26,7 @@ class Query {
       for (let key in params) {
         if(key === 'limit') this.limit(params[key]);
         if(key === 'sort') this.sort(params[key]);
-        if(['largepage', 'page', 'limit', 'sort'].includes(key)) continue;
+        if(['largepage', 'page', 'limit', 'sort', 'where'].includes(key)) continue;
         if (Array.isArray(params[key])) {
           obj[key] = {
             $in: params[key]
@@ -178,6 +178,7 @@ class Query {
     let where = {}, body = getParams(req);
     if(body && body.data) where = body.data.where || {};
     let query = new Query({ where });
+    query.where(body.data);
     query.req = req;
     return query;
   }
