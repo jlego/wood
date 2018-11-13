@@ -33,7 +33,7 @@ class Controller {
       });
     }
   }
-  //详情
+  //详情  
   async detail(req, res, next) {
     let Model = CTX.models.get(this.defaultModel),
         body = getParams(req);
