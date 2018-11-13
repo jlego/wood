@@ -165,7 +165,11 @@ class App{
     if(opts) Object.assign(CONFIG, opts);
     if(!isEmpty(CONFIG)){
       // redis
-      if(CONFIG.redis.master) Redis.connect(CONFIG.redis.master);
+      if(CONFIG.redis) {
+        for(let key in CONFIG.redis){
+          Redis.connect(CONFIG.redis[key]);
+        }
+      }
       // mysql
       if(CONFIG.mysql){
         new Mysql().connect().then(() => {
@@ -185,5 +189,5 @@ class App{
     }
   }
 };
-global.CTX = new App();
-module.exports = global.CTX;
+global.APP = global.CTX = new App();
+module.exports = global.APP;
