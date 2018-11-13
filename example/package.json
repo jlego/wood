@@ -7,7 +7,7 @@
     "docs": "apidoc -i ./routes/ -o ./docs/ -t ./node_modules/wood-node/template/",
     "start": "node ./main.js",
     "cluster": "node ./maincluster.js",
-    "dev": "nodemon --inspect=9229 ./main.js"
+    "dev": "nodemon --inspect=9230 ./main.js"
   },
   "author": "yuronghui",
   "license": "ISC"

@@ -1,53 +1,51 @@
 const {
   Controller,
+  Model,
   error,
   catchErr,
-  Token,
+  Mongo,
+  Query,
   Util
 } = require('../../index');
-const TestModel = require('../models/testModel');
+const controller = Controller();
 
-class TestController extends Controller {
-  constructor(opts = {}) {
-    super({
-      model: TestModel,
-      parse: {
-        input: (req, key) => {
-
-        },
-        output: (req, data, key) => {
-          return data;
-        }
-      },
-      ...opts
-    });
+class TestController extends controller {
+  async create(req, res, next) {
+    let query = Query(req).select({ _id: 0, options: 0 });
+    const result = await catchErr(Model('tests').create({
+      title: '小明',
+      subData: [{
+        key: '1',
+        value: '名字'
+      }]
+    }));
+    res.print(result);
   }
   async list(req, res, next) {
-    let Model = new TestModel({}, {
-      select: {
-        _id: 0,
-        options: 0
-      }
-    }),
-    body = this.getParams(req);
-    // res.print(body);
-    res.print(error('aaaaaaaaaaaaaa'));
-    // res.print(error('bbbbbbbbbbbbbbbb'));
-    // Model.setData({
-    //   creator: {
-    //     uid: "2222",
-    //     name: "小明"
-    //   }
-    // });
-    // const result = await catchErr(Model.save());
-    // console.warn(Model.getData());
-    // const result = await catchErr(Model.queryList(body, true, this.options.addLock.list));
-    // if(result.err){
-    //   res.print(error(result.err));
-    // }else{
-    //   res.print(result);
-    // }
+    let body = Util.getParams(req),
+        page = Number(body.data.page) || 1;
+    let query = Query(req).limit(3).select({subData: 0});
+    const result = await catchErr(Model('tests').findList(query));
+    if(result.err){
+      res.print(result);
+    }else{
+      res.print({
+        list: result.data.list,
+        total: result.data.count,
+        page: page
+      });
+    }
+    // const result = await catchErr(new Mongo('tests').find(body.data));
+    // res.print(result);
+  }
+
+  async detail(req, res, next) {
+    let query = Query(req).select({subData: 0});
+    const result = await catchErr(Model('tests').findOne(query));
+    res.print(result);
   }
 }
 
-module.exports = new TestController();
+module.exports = new TestController({
+  defaultModel: 'tests'
+});

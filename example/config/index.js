@@ -19,4 +19,9 @@ module.exports = {
 	mongodb,
 	mysql,
 	redis,
+  registerDirs: {
+    route: './example/routes',
+    model: './example/models',
+    controller: './example/controllers'
+  } //默认注册模块目录
 };

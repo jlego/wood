@@ -1,51 +1,44 @@
 // by YuRonghui 2018-9-11
-const { Model, Fields, error } = require('../../index');
+const {
+  Model,
+  Fields,
+  error
+} = require('../../index');
 
-class TestModel extends Model {
-  constructor(data = {}, opts = {}) {
-    super(data, {
-      tableName: 'tests',
-      select: {
-        "_id": 0,
+let TestModel = Model('tests', new Fields({
+  "rowid": {
+    type: 'Number',
+    required: true,
+    index: true
+  },
+  "title": String,
+  "options": Array,
+  "creator": new Fields({
+    "uid": String,
+    "name": String
+  }),
+  "subData": [
+    new Fields({
+      "key": {
+        type: 'String',
+        required: true
       },
-      fields: new Fields({
-        "rowid": {
-          type: 'Number',
-          required: true,
-          index: true
-        },
-        "title": String,
-        "options": Array,
-        "creator": new Fields({
-          "uid": String,
-          "name": String
-        }),
-        "subdata": [
-          new Fields({
-            "key": {
-              type: 'String',
-              required: true
-            },
-            "value": {
-              type: 'String',
-              validator(val){
-                console.warn('======', val);
-                // return '字段不正确';
-                return false;
-              }
-            }
-          })
-        ],
-        "createTime": Date,
-        "updateTime": Date,
-        "status": {
-          type: 'Number',
-          value: 1
+      "value": {
+        type: 'String',
+        validator(val) {
+          console.warn('======', val);
+          // return '字段不正确';
+          return false;
         }
-      }),
-      ...opts
-    });
+      }
+    })
+  ],
+  "createTime": Date,
+  "updateTime": Date,
+  "status": {
+    type: 'Number',
+    value: 1
   }
-}
+}));
 
 module.exports = TestModel;

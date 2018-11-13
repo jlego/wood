@@ -13,9 +13,9 @@
  * @apiParam {Number} data.limit   每页记录数
  * @apiParam {Number} data.page       当前页码
  */
-const { Router } = require('../../index');
+const { Router, Controller } = require('../../index');
 const multipart = require('connect-multiparty');
-const TestController = require('../controllers/testController');
+const controller = Controller('test');
 
 /**
  * @api {put} /test/list 测试列表
@@ -37,13 +37,9 @@ const TestController = require('../controllers/testController');
  *        }
  *     }
  */
-Router.put('/test/list', (req, res, next) =>{
-  TestController.list(req, res, next);
-});
+Router.put('/test/list', controller.list.bind(controller));
 
-Router.put('/test/detail', (req, res, next) =>{
-  TestController.detail(req, res, next);
-});
+Router.put('/test/detail', controller.detail.bind(controller));
 
 /**
  * @api {put} /test/create 新增测试配置
@@ -73,16 +69,8 @@ Router.put('/test/detail', (req, res, next) =>{
  *        }]
  *     }
  */
-Router.put('/test/create', (req, res, next) =>{
- TestController.create(req, res, next);
-});
+Router.put('/test/create', controller.create.bind(controller));
 
-Router.put('/test/save', (req, res, next) =>{
-TestController.save(req, res, next);
-});
-
-Router.put('/test/remove', (req, res, next) =>{
- TestController.remove(req, res, next);
-});
+Router.put('/test/remove', controller.remove.bind(controller));
 
 module.exports = Router;

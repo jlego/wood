@@ -1,11 +1,11 @@
 // 入口文件
-// by YuRonghui 2018-4-12
+// by YuRonghui 2018-11-11
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-global.CONFIG = require('./src/config');
+global.CONFIG = require('./src/config') || {};
 const Mongo = require('./src/mongo');
 const Mysql = require('./src/mysql');
 const Redis = require('./src/redis');
@@ -13,107 +13,152 @@ const Router = express.Router();
 const Util = require('./src/util');
 const Middlewares = require('./src/middleware');
 const Model = require('./src/model');
-const { error, catchErr } = Util;
+const Controller = require('./src/controller');
+const Query = require('./src/query');
+const Fields = require('./src/fields');
+const Modelsql = require('./src/modelsql');
+const Tcp = require('./src/tcp');
+const { error, catchErr, isEmpty } = Util;
+const models = new Map();
+const controllers = new Map();
 
-function startApp() {
-  const app = express();
-  if(!CONFIG.isDebug) app.set('env', 'production');
-  app.use(express.static('docs'));
-  app.use(bodyParser.json());
-
-  // 跨域
-  if (CONFIG.crossDomain) {
-    app.all('*',
-      function(req, res, next) {
-        res.header("Access-Control-Allow-Origin", req.headers.origin);
-        res.header("Access-Control-Allow-Headers", CONFIG.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
-        res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-        res.header("Access-Control-Allow-Credentials", true);
-        next();
-      });
+class App{
+  constructor(){
+    this.Router = Router;
+    this.Fields = Fields;
+    this.Modelsql = Modelsql;
+    this.Tcp = Tcp;
+    this.Middlewares = Middlewares;
+    this.Util = Util;
+    this.error = error;
+    this.catchErr = catchErr;
+    this.Mongo = Mongo;
+    this.Mysql = Mysql;
+    this.Redis = Redis;
+    this.models = models;
+    this.controllers = controllers;
   }
-  // 中间件
-  app.use(Middlewares.responseFormat);
-  app.use(Middlewares.requestBody);
-
-  // 加载路由模块
-  if(CONFIG.routes){
-    CONFIG.routes.forEach((moduleRoute) => {
-      app.use('/', moduleRoute);
-    });
-  }else{
-    const dirList = fs.readdirSync(path.resolve(__dirname, '../../routes'));
-    dirList.forEach((fileName) => {
-      let nameArr = fileName.split('.'),
-        moduleName = nameArr[0],
-        fileExt = nameArr[1];
-      if(fileExt == 'js'){
-        let moduleRoute = require(path.resolve(__dirname, `../../routes/${moduleName}`));
-        app.use('/', moduleRoute);
+  // 查询条件对象
+  Query(req = {}) {
+    return Query.getQuery(req);
+  }
+  Controller(name) {
+    if(name && controllers.has(name)){
+      return controllers.get(name);
+    }
+    return Controller;
+  }
+  Model(tableName, fields, select = {}) {
+    if(tableName){
+      if(models.has(tableName)){
+        return models.get(tableName);
       }
-    });
-  }
-
-  if(CONFIG.buildDocx){
-    const Docx = require('./src/docx');
-    app.use('/', Router.get(Docx.path, Docx.fun));
-  }
-
-  // 返回错误信息
-  app.use(function(err, req, res, next) {
-    if (err) {
-      res.status(err.status || 500);
-      res.print(error(err));
-      return;
+      if(tableName && fields){
+        let theModel = new Model({
+          tableName,
+          fields,
+          select
+        });
+        theModel.redis = new Redis(tableName);
+        theModel.db = new Mongo(tableName);
+        models.set(tableName, theModel);
+        theModel._init();
+        return models.get(tableName);
+      }
     }
-    next();
-  });
-
-  app.use(function(req, res, next) {
-    res.status(404);
-    res.print(CONFIG.error_code.error_noroute);
-  });
-
-  process.on('uncaughtException', function (err) {
-    console.log('Caught exception: ', err);
-  });
-
-  // 监听服务
-  const httpServer = app.listen(
-    CONFIG.service.http_server.listenport,
-    function() {
-      let host = httpServer.address().address;
-      let port = httpServer.address().port;
-      console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
-    }
-  );
-}
-
-module.exports = {
-  _models: new Map(),
-  Controller: require('./src/controller'),
-  Model: new Model(this),
-  Fields: require('./src/fields'),
-  Modelsql: require('./src/modelsql'),
-  Tcp: require('./src/tcp'),
-  Middlewares,
-  Util,
-  error,
-  catchErr,
-  Mongo,
-  Mysql,
-  Redis,
-  Router,
-  addMiddleware(opts){
+    return Model;
+  }
+  // 添加中间件
+  use(opts){
     if(typeof opts === 'object'){
       Object.assign(Middlewares, opts);
     }else if(typeof opts === 'function'){
       Middlewares[opts.name] = opts;
     }
-  },
+  }
+  // 初始化应用
+  init() {
+    const app = express();
+    if(!CONFIG.isDebug) app.set('env', 'production');
+    app.use(express.static('docs'));
+    app.use(bodyParser.json());
+
+    // 跨域
+    if (CONFIG.crossDomain) {
+      app.all('*',
+        function(req, res, next) {
+          res.header("Access-Control-Allow-Origin", req.headers.origin);
+          res.header("Access-Control-Allow-Headers", CONFIG.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
+          res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+          res.header("Access-Control-Allow-Credentials", true);
+          next();
+        });
+    }
+    // 内置中间件
+    app.use(Middlewares.responseFormat);
+    app.use(Middlewares.requestBody);
+
+    // 加载模块
+    ['model', 'controller', 'route'].forEach(type => {
+      let dirPath = CONFIG.registerDirs[type];
+      const dirList = fs.readdirSync(path.resolve(__dirname, dirPath));
+      dirList.forEach((fileName) => {
+        let nameArr = fileName.split('.'),
+          moduleName = nameArr[0],
+          fileExt = nameArr[1];
+        if(fileExt === 'js'){
+          let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
+          if(type === 'controller') {
+            let controllerName = moduleName.replace('Controller', '');
+            if(!controllers.has(controllerName)){
+              theModule = typeof theModule === 'function' ? new theModule() : theModule;
+              controllers.set(controllerName, theModule);
+            }
+          }
+        }
+      });
+    });
+    app.use('/', Router);
+
+    // 生成api文档
+    if(CONFIG.buildDocx){
+      const Docx = require('./src/docx');
+      app.use('/', Router.get(Docx.path, Docx.fun));
+    }
+
+    // 返回错误信息
+    app.use(function(err, req, res, next) {
+      if (err) {
+        res.status(err.status || 500);
+        res.print(error(err));
+        return;
+      }
+      next();
+    });
+
+    app.use(function(req, res, next) {
+      res.status(404);
+      res.print(CONFIG.error_code.error_noroute);
+    });
+
+    process.on('uncaughtException', function (err) {
+      console.log('Caught exception: ', err);
+    });
+
+    // 监听服务端口
+    const httpServer = app.listen(
+      CONFIG.service.http_server.listenport,
+      function() {
+        let host = httpServer.address().address;
+        let port = httpServer.address().port;
+        console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
+      }
+    );
+  }
+  // 启动
   start(opts) {
-    if(opts) Object.assign(global.CONFIG, opts);
-    if(!Util.isEmpty(global.CONFIG)){
+    if(opts) Object.assign(CONFIG, opts);
+    if(!isEmpty(CONFIG)){
       const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
       if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
@@ -121,14 +166,14 @@ module.exports = {
       if(CONFIG.mysql){
         new Mysql().connect().then(() => {
           if(!mongourl) {
-            startApp();
+            this.init();
           }
         });
       }
       // mongodb
       if(mongourl){
-        Mongo.connect(mongourl, function (err, client) {
-          startApp();
+        Mongo.connect(mongourl, (err, client) => {
+          this.init();
         });
       }
     }else{
@@ -136,3 +181,5 @@ module.exports = {
     }
   }
 };
+global.CTX = new App();
+module.exports = global.CTX;

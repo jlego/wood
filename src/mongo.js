@@ -2,7 +2,7 @@
 // by YuRonghui 2018-2-6
 const Query = require('./query');
 const mongodb = require('mongodb');
-const Util = require('./util');
+const { error } = require('./util');
 const ObjectId = mongodb.ObjectID;
 let db = null;
 
@@ -12,22 +12,16 @@ class Mongo {
     if(db) {
       this.collection = db.collection(this.tableName);
     }else{
-      throw Util.error('mongodb failed: db=null');
+      throw error('mongodb failed: db=null');
     }
-  }
-  // 返回查询对象
-  query(data = {}) {
-    return new Query(data, this);
   }
   // 获取
   _getParams(obj = {}) {
     if (obj._isQuery) {
       return obj.toJSON();
     } else {
-      if (!obj.where) obj = {
-        where: obj
-      };
-      let query = this.query(obj);
+      if (!obj.where) obj = { where: obj };
+      let query = new Query(obj);
       return query.toJSON();
     }
     if (obj.where._id) obj.where._id = ObjectId(obj.where._id);
@@ -117,24 +111,22 @@ class Mongo {
       });
     });
   }
-}
-
-module.exports = {
-  client: Mongo,
-  connect(url, callback) {
+  static connect(url, callback) {
     mongodb.MongoClient.connect(url, (err, client) => {
       if (err) {
         console.log('MongoDB failed :' + err.message);
-        this.db = null;
+        Mongo.db = null;
         if (callback) callback(err);
       } else {
         console.log('MongoDB connected Successfull');
-        this.db = db = client;
+        Mongo.db = db = client;
         if (callback) callback(err, client);
       }
     });
-  },
-  close(){
+  }
+  static close(){
     db.close();
   }
-};
+}
+
+module.exports = Mongo;
