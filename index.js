@@ -43,12 +43,14 @@ class App{
   Query(req = {}) {
     return Query.getQuery(req);
   }
+  // 控制器
   Controller(name) {
     if(name && controllers.has(name)){
       return controllers.get(name);
     }
     return Controller;
   }
+  // 数据模型
   Model(_tableName, fields, select = {}) {
     let nameArr = _tableName.split('.'),
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
@@ -59,7 +61,7 @@ class App{
       }
       if(tableName && fields){
         let theModel = new Model({
-          tableName: tableName,
+          tableName,
           fields,
           select
         });
@@ -150,14 +152,16 @@ class App{
     });
 
     // 监听服务端口
-    const httpServer = app.listen(
-      CONFIG.service.http_server.listenport,
-      function() {
-        let host = httpServer.address().address;
-        let port = httpServer.address().port;
-        console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
-      }
-    );
+    if(CONFIG.openHttpServer){
+      const httpServer = app.listen(
+        CONFIG.service.http_server.listenport,
+        function() {
+          let host = httpServer.address().address;
+          let port = httpServer.address().port;
+          console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
+        }
+      );
+    }
   }
   // 启动
   start(opts) {
