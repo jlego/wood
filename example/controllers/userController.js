@@ -13,14 +13,16 @@ class UserController extends controller {
   // 添加用户
   async add(req, res, next) {
     let params = Util.getParams(req);
-    let query = Query().where({ userName: params.data.userName });
+    let query = Query().where({ username: params.data.username });
     const hasOne = await catchErr(Model('users').findOne(query));
     if(hasOne.err){
       res.print(hasOne);
     }else{
-      let oper = Util.isEmpty(hasOne.data) ? 'create' : 'update',
+      let oper = !hasOne.data || Util.isEmpty(hasOne.data) ? 'create' : 'update',
         data = params.data;
-      if(!Util.isEmpty(hasOne.data)) Object.assign(data, hasOne.data, params.data);
+      if(hasOne.data && !Util.isEmpty(hasOne.data)) {
+        data = Object.assign(hasOne.data, params.data);
+      }
       const result = await catchErr(Model('users')[oper](data));
       res.print(result);
     }
