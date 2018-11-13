@@ -15,6 +15,7 @@ module.exports = {
     example: '',
   },
   service: {},
+  defaultDB: 'mongodb', //默认数据库
   mongodb: {},
   mysql: {},
   redis: {},

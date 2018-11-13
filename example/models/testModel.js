@@ -5,7 +5,7 @@ const {
   error
 } = require('../../index');
 
-let TestModel = Model('tests', new Fields({
+let TestModel = Model('master.tests', new Fields({
   "rowid": {
     type: 'Number',
     required: true,

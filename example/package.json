@@ -10,5 +10,8 @@
     "dev": "nodemon --inspect=9230 ./main.js"
   },
   "author": "yuronghui",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.3"
+  }
 }

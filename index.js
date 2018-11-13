@@ -5,6 +5,7 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+global.Promise = require("bluebird");
 global.CONFIG = require('./src/config') || {};
 const Mongo = require('./src/mongo');
 const Mysql = require('./src/mysql');
@@ -48,19 +49,22 @@ class App{
     }
     return Controller;
   }
-  Model(tableName, fields, select = {}) {
+  Model(_tableName, fields, select = {}) {
+    let nameArr = _tableName.split('.'),
+      dbName = nameArr.length > 1 ? nameArr[0] : 'master',
+      tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
     if(tableName){
       if(models.has(tableName)){
         return models.get(tableName);
       }
       if(tableName && fields){
         let theModel = new Model({
-          tableName,
+          tableName: tableName,
           fields,
           select
         });
         theModel.redis = new Redis(tableName);
-        theModel.db = new Mongo(tableName);
+        theModel.db = new Mongo(tableName, dbName);
         models.set(tableName, theModel);
         theModel._init();
         return models.get(tableName);
@@ -160,22 +164,21 @@ class App{
     let that = this;
     if(opts) Object.assign(CONFIG, opts);
     if(!isEmpty(CONFIG)){
-      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
-      if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
+      if(CONFIG.redis.master) Redis.connect(CONFIG.redis.master);
       // mysql
       if(CONFIG.mysql){
         new Mysql().connect().then(() => {
-          if(!mongourl) {
-            this.init();
-          }
+          if(CONFIG.defaultDB === 'mysql') this.init();
         });
       }
       // mongodb
-      if(mongourl){
-        Mongo.connect(mongourl, (err, client) => {
-          this.init();
-        });
+      if(CONFIG.mongodb){
+        for(let key in CONFIG.mongodb){
+          Mongo.connect(CONFIG.mongodb[key].dburl, key, (err, client) => {
+            if(CONFIG.defaultDB === 'mongodb' && key === 'master') this.init();
+          });
+        }
       }
     }else{
       console.error('系统配置不能为空!');

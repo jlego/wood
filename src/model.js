@@ -258,7 +258,7 @@ class Model {
         }else{
           query = Query.getQuery({body: { data }});
         }
-        if (CONFIG.isDebug) console.warn(`请求列表, ${hasKey ? '有' : '无'}listKey`, isEmpty(this.relation));
+        // if (CONFIG.isDebug) console.warn(`请求列表, ${hasKey ? '有' : '无'}listKey`, isEmpty(this.relation));
         if (!isEmpty(this.select)) query.select(this.select);
         if (!isEmpty(this.relation)) query.populate(this.relation);
         let counts = this.db.count(query),
