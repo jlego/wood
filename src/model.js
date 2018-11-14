@@ -75,6 +75,12 @@ class Model {
     if (name) this.db.collection.dropIndex(name);
   }
 
+  // 重置数据
+  resetData() {
+    this.fields.resetData();
+    this._hasdata = false;
+  }
+
   // 设置数据
   setData(target, value) {
     this.fields.setData(target, value);
@@ -94,9 +100,7 @@ class Model {
   //新增数据
   async create(data = {}, addLock = true, hascheck = true) {
     if (!data) throw error('create方法的参数data不能为空');
-    console.warn(this.getData());
     if(!this._hasdata) this.setData(data);
-    
     let rowid = await this.redis.rowid();
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
@@ -107,6 +111,7 @@ class Model {
       if (lock.data) {
         let result = await catchErr(this.db.create(this.getData()));
         if(addLock) this.redis.unlock(lock.data);
+        this.resetData();
         if(result.err) throw error(result.err);
         return result.data;
       }else{
@@ -134,6 +139,7 @@ class Model {
           hasSet = keys[0].indexOf('$') === 0;
           const result = await catchErr(this.db[isFindOneAndUpdate ? 'findOneAndUpdate' : 'update']({ rowid }, hasSet ? data : { $set: data }));
           if(addLock) this.redis.unlock(lock.data);
+          this.resetData();
           if (result.data){
             return isFindOneAndUpdate ? result.data : { rowid };
           }else{
