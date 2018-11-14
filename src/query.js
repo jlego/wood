@@ -178,7 +178,7 @@ class Query {
     let where = {}, body = getParams(req);
     if(body && body.data) where = body.data.where || {};
     let query = new Query({ where });
-    if(!isEmpty(req)) query.req = req;
+    if(req) query.req = req;
     return query;
   }
 }
