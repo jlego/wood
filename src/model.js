@@ -75,6 +75,12 @@ class Model {
     if (name) this.db.collection.dropIndex(name);
   }
 
+  // 重置数据
+  resetData() {
+    this.fields.resetData();
+    this._hasdata = false;
+  }
+
   // 设置数据
   setData(target, value) {
     this.fields.setData(target, value);
@@ -94,9 +100,7 @@ class Model {
   //新增数据
   async create(data = {}, addLock = true, hascheck = true) {
     if (!data) throw error('create方法的参数data不能为空');
-    console.warn(this.getData());
-    if(!this._hasdata) this.setData(data);
-    
+    if(!isEmpty(data)) this.setData(data);
     let rowid = await this.redis.rowid();
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
@@ -119,7 +123,7 @@ class Model {
   // 更新数据
   async update(data = {}, addLock = true, hascheck = true, isFindOneAndUpdate) {
     if (!data) throw error('update方法的参数data不能为空');
-    if(!this._hasdata) this.setData(data);
+    if(!isEmpty(data)) this.setData(data);
     if (!this.isNew() || data.rowid) {
       let err = hascheck ? this.fields.validate() : false,
         hasSet = false,
@@ -156,11 +160,11 @@ class Model {
     let data = this.getData(false);
     if (isEmpty(data) || !data) throw error('save方法的data为空');
     if (!this.isNew() || data.rowid) {
-      const updateOk = await catchErr(this.update(data));
+      const updateOk = await catchErr(this.update());
       if (updateOk.err) throw error(updateOk.err);
       return updateOk.data;
     } else {
-      const result = await catchErr(this.create(data));
+      const result = await catchErr(this.create());
       if (result.err) throw error(result.err);
       return result.data;
     }

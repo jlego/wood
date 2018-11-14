@@ -31,7 +31,7 @@
     const App = require('wood-node');
     let config = {};  //配置, 注：详细参数请参照源码/src/config.js
     App.start(config);
-    
+
 模型(/models/userModel.js)
 
     const { Model, Util, Fields } = require('wood-node'); //注：mysql时请使用Modelsql
@@ -46,7 +46,7 @@
       }), {
         "_id": 0,  //0为不返回的字段
       });
-    
+
 控制器(/controllers/userController.js)
 
     const { Controller, catchErr, Util, Query, Model } = require('wood-node');
@@ -60,7 +60,7 @@
       }
     }
     module.exports = new UserController({ defaultModel: 'users' });
-    
+
 路由(/routes/userRouter.js)
 
     const { Router, Controller } = require('wood-node');

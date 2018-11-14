@@ -143,10 +143,32 @@ class Fields {
     return loopData(this.data);
   }
 
+  // 重置数据
+  resetData(){
+    function loopData(fields, parentData) {
+      if (!Util.isEmpty(fields)) {
+        for (let key in fields) {
+          let field = fields[key];
+          if (typeof field == 'object') {
+            if (!fieldType.includes(field.type)) {
+              parentData[key] = loopData(field, Array.isArray(field) ? [] : {});
+            } else {
+              let theVal = field.default;
+              parentData[key] = theVal;
+            }
+          } else if (typeof field !== 'function') {
+            parentData[key] = field;
+          }
+        }
+      }
+      return parentData;
+    }
+    loopData(this.data, {});
+  }
+
   // 设置模型数据
   setData(target) {
-    let fields = this.data,
-      that = this;
+    let fields = this.data;
     if (typeof target === 'object' && !Array.isArray(target)) {
       if (!Util.isEmpty(target)) {
         function loopData(_fields, data) {
@@ -180,7 +202,6 @@ class Fields {
 
   // 获取模型数据
   getData(hasVirtualField = true) {
-    let that = this;
     function loopData(fields, parentData) {
       if (!Util.isEmpty(fields)) {
         for (let key in fields) {
