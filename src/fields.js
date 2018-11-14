@@ -149,7 +149,6 @@ class Fields {
       if (!Util.isEmpty(fields)) {
         for (let key in fields) {
           let field = fields[key];
-          if (!hasVirtualField && field.type === 'Virtual') continue;
           if (typeof field == 'object') {
             if (!fieldType.includes(field.type)) {
               parentData[key] = loopData(field, Array.isArray(field) ? [] : {});
