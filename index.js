@@ -57,7 +57,9 @@ class App{
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
     if(tableName){
       if(models.has(tableName)){
-        return models.get(tableName);
+        let _model = models.get(tableName);
+        _model.resetData();
+        return _model;
       }
       if(tableName && fields){
         let theModel = new Model({
