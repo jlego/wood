@@ -65,5 +65,5 @@
 
     const { Router, Controller } = require('wood-node');
     const UserController = Controller('user');
-    Router.put('/project/user/add', UserController.addOne.bind(UserController));
+    Router.put('/project/user/add', UserController.userList.bind(UserController));
     module.exports = Router;
