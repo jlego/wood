@@ -46,10 +46,11 @@ class Controller {
         body = getParams(req),
         result = {};
     if(Array.isArray(body.data)){
-      result = await catchErr(Model.create(body.data, this.addLock, this.hasCheck));
+      for(let i = 0, lang = body.data.length; i < lang; i++){
+        result = await catchErr(Model.create(body.data[i], this.addLock, this.hasCheck));
+      }
     }else{
-      Model.setData(body.data);
-      result = await catchErr(Model.save());
+      result = await catchErr(Model.create(body.data, this.addLock, this.hasCheck));
     }
     res.print(result);
   }
@@ -59,7 +60,7 @@ class Controller {
         body = getParams(req);
     if(Array.isArray(body.data)){
       let allResult = {};
-      for(let i = 0; i < body.data.length; i++){
+      for(let i = 0, lang = body.data.length; i < lang; i++){
         delete body.data[i].updateTime;
         let result = await catchErr(Model.update(body.data[i], this.addLock, this.hasCheck));
         if(result.err) {

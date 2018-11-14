@@ -4,13 +4,14 @@ const Query = require('./query');
 const mongodb = require('mongodb');
 const { error } = require('./util');
 const ObjectId = mongodb.ObjectID;
-let db = null;
+let dbs = {};
 
 class Mongo {
-  constructor(tbname) {
+  constructor(tbname, database = 'master') {
     this.tableName = tbname;
-    if(db) {
-      this.collection = db.collection(this.tableName);
+    this.database = database;
+    if(dbs[this.database]) {
+      this.collection = dbs[this.database].collection(this.tableName);
     }else{
       throw error('mongodb failed: db=null');
     }
@@ -111,21 +112,21 @@ class Mongo {
       });
     });
   }
-  static connect(url, callback) {
+  static connect(url, database = 'master', callback) {
     mongodb.MongoClient.connect(url, (err, client) => {
       if (err) {
-        console.log('MongoDB failed :' + err.message);
-        Mongo.db = null;
+        console.log(`MongoDB [${database}] failed :` + err.message);
+        dbs[database] = null;
         if (callback) callback(err);
       } else {
-        console.log('MongoDB connected Successfull');
-        Mongo.db = db = client;
+        console.log(`MongoDB [${database}] connected Successfull`);
+        dbs[database] = client;
         if (callback) callback(err, client);
       }
     });
   }
-  static close(){
-    db.close();
+  static close(database = 'master'){
+    dbs[database].close();
   }
 }
 

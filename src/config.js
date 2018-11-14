@@ -3,6 +3,7 @@
 const Errorcode = require('./errorcode');
 
 module.exports = {
+  openHttpServer: true, //开启http服务
   projectName: 'exampleApi',  //项目名
   version: '20180408', //版本号
   verifyLogin: true, //是否验证登录
@@ -15,6 +16,7 @@ module.exports = {
     example: '',
   },
   service: {},
+  defaultDB: 'mongodb', //默认数据库
   mongodb: {},
   mysql: {},
   redis: {},

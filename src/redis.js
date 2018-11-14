@@ -63,11 +63,11 @@ class Redis {
                 catchErr(that.lock(timeout));
               }, 20);
             } else {
-              resolve(true);
+              resolve(lockInstance);
             }
           });
         }else{
-          resolve(true);
+          resolve(lockInstance);
         }
       }
     });

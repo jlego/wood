@@ -17,7 +17,7 @@
   "author": "legojs",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.5.3",
     "body-parser": "^1.18.2",
     "connect-mongo": "^2.0.0",
     "connect-multiparty": "^2.1.0",

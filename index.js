@@ -5,6 +5,7 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+global.Promise = require("bluebird");
 global.CONFIG = require('./src/config') || {};
 const Mongo = require('./src/mongo');
 const Mysql = require('./src/mysql');
@@ -42,13 +43,18 @@ class App{
   Query(req = {}) {
     return Query.getQuery(req);
   }
+  // 控制器
   Controller(name) {
     if(name && controllers.has(name)){
       return controllers.get(name);
     }
     return Controller;
   }
-  Model(tableName, fields, select = {}) {
+  // 数据模型
+  Model(_tableName, fields, select = {}) {
+    let nameArr = _tableName.split('.'),
+      dbName = nameArr.length > 1 ? nameArr[0] : 'master',
+      tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
     if(tableName){
       if(models.has(tableName)){
         return models.get(tableName);
@@ -60,7 +66,7 @@ class App{
           select
         });
         theModel.redis = new Redis(tableName);
-        theModel.db = new Mongo(tableName);
+        theModel.db = new Mongo(tableName, dbName);
         models.set(tableName, theModel);
         theModel._init();
         return models.get(tableName);
@@ -146,40 +152,45 @@ class App{
     });
 
     // 监听服务端口
-    const httpServer = app.listen(
-      CONFIG.service.http_server.listenport,
-      function() {
-        let host = httpServer.address().address;
-        let port = httpServer.address().port;
-        console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
-      }
-    );
+    if(CONFIG.openHttpServer){
+      const httpServer = app.listen(
+        CONFIG.service.http_server.listenport,
+        function() {
+          let host = httpServer.address().address;
+          let port = httpServer.address().port;
+          console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
+        }
+      );
+    }
   }
   // 启动
   start(opts) {
     if(opts) Object.assign(CONFIG, opts);
     if(!isEmpty(CONFIG)){
-      const mongourl = CONFIG.mongodb.mongodb_config.mongourl;
       // redis
-      if(CONFIG.redis.proxy) Redis.connect(CONFIG.redis.proxy);
+      if(CONFIG.redis) {
+        for(let key in CONFIG.redis){
+          Redis.connect(CONFIG.redis[key]);
+        }
+      }
       // mysql
       if(CONFIG.mysql){
         new Mysql().connect().then(() => {
-          if(!mongourl) {
-            this.init();
-          }
+          if(CONFIG.defaultDB === 'mysql') this.init();
         });
       }
       // mongodb
-      if(mongourl){
-        Mongo.connect(mongourl, (err, client) => {
-          this.init();
-        });
+      if(CONFIG.mongodb){
+        for(let key in CONFIG.mongodb){
+          Mongo.connect(CONFIG.mongodb[key].dburl, key, (err, client) => {
+            if(CONFIG.defaultDB === 'mongodb' && key === 'master') this.init();
+          });
+        }
       }
     }else{
       console.error('系统配置不能为空!');
     }
   }
 };
-global.CTX = new App();
-module.exports = global.CTX;
+global.APP = global.CTX = new App();
+module.exports = global.APP;

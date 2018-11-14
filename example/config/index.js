@@ -19,6 +19,7 @@ module.exports = {
 	mongodb,
 	mysql,
 	redis,
+	defaultDB: 'mongodb',
   registerDirs: {
     route: './example/routes',
     model: './example/models',
