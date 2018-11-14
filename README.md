@@ -59,7 +59,7 @@
         res.print(result);
       }
     }
-    module.exports = new UserController({ defaultModel: 'user' });
+    module.exports = new UserController({ defaultModel: 'users' });
     
 路由(/routes/userRouter.js)
 
