@@ -17,6 +17,7 @@ const _KeyTimeout = 60 * 1; //设置listkey过期时间，秒
 
 class Model {
   constructor(opts = {}) {
+    this._hasdata = false;
     this.tableName = opts.tableName || '';
     this.fields = opts.fields || {};
     this.select = opts.select || {};
@@ -77,6 +78,7 @@ class Model {
   // 设置数据
   setData(target, value) {
     this.fields.setData(target, value);
+    this._hasdata = true;
   }
 
   // 获取模型数据
@@ -90,13 +92,15 @@ class Model {
   }
 
   //新增数据
-  async create(data, addLock = true, hascheck = true) {
+  async create(data = {}, addLock = true, hascheck = true) {
     if (!data) throw error('create方法的参数data不能为空');
+    console.warn(this.getData());
+    if(!this._hasdata) this.setData(data);
+    
     let rowid = await this.redis.rowid();
     if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
-      data.rowid = rowid;
-      this.setData(data);
+      this.setData('rowid', rowid);
       let err = hascheck ? this.fields.validate() : false;
       if (err) throw error(err);
       const lock = addLock ? await catchErr(this.redis.lock()) : {data: 1};
@@ -113,8 +117,9 @@ class Model {
   }
 
   // 更新数据
-  async update(data, addLock = true, hascheck = true) {
+  async update(data = {}, addLock = true, hascheck = true, isFindOneAndUpdate) {
     if (!data) throw error('update方法的参数data不能为空');
+    if(!this._hasdata) this.setData(data);
     if (!this.isNew() || data.rowid) {
       let err = hascheck ? this.fields.validate() : false,
         hasSet = false,
@@ -127,10 +132,10 @@ class Model {
           delete data.rowid;
           let keys = Object.keys(data);
           hasSet = keys[0].indexOf('$') === 0;
-          const result = await catchErr(this.db.update({ rowid }, hasSet ? data : { $set: data }));
+          const result = await catchErr(this.db[isFindOneAndUpdate ? 'findOneAndUpdate' : 'update']({ rowid }, hasSet ? data : { $set: data }));
           if(addLock) this.redis.unlock(lock.data);
           if (result.data){
-            return { rowid };
+            return isFindOneAndUpdate ? result.data : { rowid };
           }else{
             throw error(result.err);
           }
@@ -140,6 +145,10 @@ class Model {
       }
     }
     throw error(false);
+  }
+  // 更新数据, 结果返回当前记录
+  async findOneAndUpdate(data = {}, addLock = true, hascheck = true) {
+    return this.update(data, addLock, hascheck, true);
   }
 
   // 保存数据
