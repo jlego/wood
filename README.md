@@ -29,79 +29,41 @@
 项目入口(/main.js)
 
     const App = require('wood-node');
-    const UserRouter = require('./routes/userRouter');
-    let config = {
-        routes: [UserRouter]
-    };  //配置, 注：详细参数请参照源码/src/config.js
+    let config = {};  //配置, 注：详细参数请参照源码/src/config.js
     App.start(config);
-    
+
 模型(/models/userModel.js)
 
-    const { Model, Util } = require('wood-node'); //注：mysql时请使用Modelsql
-    class UserModel extends Model {
-      constructor(data = {}, opts = {}) {
-        let options = {
-          //数据库表名
-          tableName: 'users', 
-          //过滤字段
-          select: {
-            "_id": 0,  //0为不返回的字段
-          },
-          //定义数据表字段
-          fields: {
-            "rowid": { //行Id
-              type: 'Number',
-              required: true, //是否验证
-              index: true  //索引
-            },
-            "machineName": String,
-            "status": Number
-          },
-          ...opts
-        };
-        super(data, options);
-      }
-      // 自定义方法
-      saveOne(){
-        
-      }
-    }
-    module.exports = UserModel;
-    
+    const { Model, Util, Fields } = require('wood-node'); //注：mysql时请使用Modelsql
+    module.exports = Model('users', new Fields({
+        "rowid": { //行Id
+          type: 'Number',
+          required: true, //是否验证
+          index: true  //索引
+        },
+        "machineName": String,
+        "status": Number
+      }), {
+        "_id": 0,  //0为不返回的字段
+      });
+
 控制器(/controllers/userController.js)
 
-    const { Controller, catchErr } = require('wood-node');
-    const UserModel = require('../models/userModel');
-    class UserController extends Controller {
-      constructor(opts = {}) {
-        super({
-          model: UserModel,
-          parse: {
-            input: function(req){
-
-            },
-            output: function(data){
-              return data;
-            }
-          },
-          ...opts
-        });
-      }
-      async addOne(req, res, next) {
-        let User = new UserModel(),
-            params = this.getParams(req);
-        User.setData(params.data);
-        const result = await catchErr(User.saveOne());
+    const { Controller, catchErr, Util, Query, Model } = require('wood-node');
+    const controller = Controller();
+    class UserController extends controller {
+      async userList(req, res, next) {
+        let params = Util.getParams(req);
+        let query = Query(req).where({rowid: 2}).limit(3).select({_id: 0});
+        const result = await catchErr(Model('users').findList(query));
         res.print(result);
       }
     }
-    module.exports = new UserController();
-    
+    module.exports = new UserController({ defaultModel: 'users' });
+
 路由(/routes/userRouter.js)
 
-    const { Router } = require('wood-node');
-    const UserController = require('../controllers/userController');
-    Router.put('/project/user/add', (req, res, next) =>{
-      UserController.addOne(req, res, next);
-    });
+    const { Router, Controller } = require('wood-node');
+    const UserController = Controller('user');
+    Router.put('/project/user/add', UserController.addOne.bind(UserController));
     module.exports = Router;
