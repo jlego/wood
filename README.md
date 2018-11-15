@@ -1,8 +1,16 @@
 # wood
 ### 基于express的后台接口开发框架
+#### v1.2.0更新:
+注：从版本v1.2.0起，框架的使用方式与以前版本区别较大；
+- 增加了Fields类，用于存放数据模型model数据和验证；
+- 增加了模块自动加载机制；
+- 简化了模块调用方法，由new创建实例改为函数创建实例；
+- 升级了mongodb.js为3.1.9版本；
+- 增加了mongodb副本集群的支持；
+- 完善了查询对象query；
+- (已弃用)控制器类支持输入与输出的数据处理方法；
 
-#### 现有功能:
-
+#### 版本<v1.2.0的功能:
 - 使用ES6语法，如async/await等；
 - 支持mongodb和mysql等数据库;
 - 模型类自动根据已定义的字段来创建数据表；
@@ -29,7 +37,7 @@
 项目入口(/main.js)
 
     const App = require('wood-node');
-    let config = {};  //配置, 注：详细参数请参照源码/src/config.js
+    let config = {};  //配置, 注：详细参数请参照示例源码/example/config/
     App.start(config);
 
 模型(/models/userModel.js)
@@ -64,6 +72,6 @@
 路由(/routes/userRouter.js)
 
     const { Router, Controller } = require('wood-node');
-    const UserController = Controller('user');
-    Router.put('/project/user/add', UserController.userList.bind(UserController));
-    module.exports = Router;
+    const router = Router('user');
+    router.put('/project/user/add', Controller('user').userList);
+    module.exports = router;

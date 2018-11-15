@@ -37,9 +37,9 @@ const controller = Controller('test');
  *        }
  *     }
  */
-Router.put('/test/list', controller.list.bind(controller));
+Router('test').put('/test/list', controller.list);
 
-Router.put('/test/detail', controller.detail.bind(controller));
+Router('test').put('/test/detail', controller.detail);
 
 /**
  * @api {put} /test/create 新增测试配置
@@ -69,8 +69,8 @@ Router.put('/test/detail', controller.detail.bind(controller));
  *        }]
  *     }
  */
-Router.put('/test/create', controller.create.bind(controller));
+Router('test').put('/test/create', controller.create);
 
-Router.put('/test/remove', controller.remove.bind(controller));
+Router('test').put('/test/remove', controller.remove);
 
 module.exports = Router;

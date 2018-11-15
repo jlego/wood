@@ -134,9 +134,10 @@ class Model {
         let lock = addLock ? await catchErr(this.redis.lock()) : {data: 1};
         if (lock.data) {
           delete data.rowid;
-          let keys = Object.keys(data);
+          let keys = Object.keys(data),
+            method = isFindOneAndUpdate ? 'findOneAndUpdate' : 'update';
           hasSet = keys[0].indexOf('$') === 0;
-          const result = await catchErr(this.db[isFindOneAndUpdate ? 'findOneAndUpdate' : 'update']({ rowid }, hasSet ? data : { $set: data }));
+          const result = await catchErr(this.db[method]({ rowid }, hasSet ? data : { $set: data }));
           if(addLock) this.redis.unlock(lock.data);
           if (result.data){
             return isFindOneAndUpdate ? result.data : { rowid };
@@ -191,6 +192,19 @@ class Model {
     }
   }
 
+  // 执行查询
+  exec(oper = 'find', data) {
+    if (CONFIG.isDebug) console.warn(`data ${oper}: ${JSON.stringify(data)}`);
+    if (this.db[oper]) {
+      if (data.aggregate.length) {
+        return this.db.aggregate(data.aggregate);
+      } else {
+        return this.db[oper](data);
+      }
+    }
+    return error(CONFIG.error_code.error_nodata);
+  }
+
   // 查询单条记录
   async findOne(data, addLock = true) {
     const hasLock = addLock ? await catchErr(this.redis.hasLock()) : {};
@@ -215,7 +229,7 @@ class Model {
         if(result.err){
           throw error(result.err);
         }else{
-          return result.data;
+          return Array.isArray(result.data) ? result.data[0] : result.data;
         }
       } else {
         await new Promise((resolve, reject) => {
@@ -226,19 +240,6 @@ class Model {
         return this.findOne(data, addLock);
       }
     }
-  }
-
-  // 执行查询
-  exec(oper = 'find', data) {
-    if (CONFIG.isDebug) console.warn(`data ${oper}: ${JSON.stringify(data)}`);
-    if (this.db[oper]) {
-      if (data.aggregate.length) {
-        return this.db.aggregate(data.aggregate, oper == 'findOne' ? true : false);
-      } else {
-        return this.db[oper](data);
-      }
-    }
-    return error(CONFIG.error_code.error_nodata);
   }
 
   // 查询数据列表

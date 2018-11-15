@@ -59,8 +59,13 @@ class Redis {
         if(!hasLock.data){
           redlock.lock(this.getKey('lock'), timeout, (err, lockInstance) => {
             if (lockInstance === null) {
-              setTimeout(() => {
-                catchErr(that.lock(timeout));
+              setTimeout(async () => {
+                let result = await catchErr(that.lock(timeout));
+                if(result.err){
+                  reject(result.err);
+                }else{
+                  resolve(result.data);
+                }
               }, 20);
             } else {
               resolve(lockInstance);
