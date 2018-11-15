@@ -36,7 +36,7 @@
 项目入口(/main.js)
 
     const App = require('wood-node');
-    let config = {};  //配置, 注：详细参数请参照源码/src/config.js
+    let config = {};  //配置, 注：详细参数请参照示例源码/example/config/
     App.start(config);
 
 模型(/models/userModel.js)
