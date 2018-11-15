@@ -14,18 +14,19 @@ class UserController extends controller {
   async add(req, res, next) {
     let params = Util.getParams(req);
     params.data.rowid = params.data.uid;
-    if(!params.data.rowid){
+    delete params.data.uid;
+    if (!params.data.rowid) {
       res.print('uid不能为空');
       return;
     }
     let query = Query().where({ rowid: params.data.rowid });
     const hasOne = await catchErr(Model('users').findOne(query));
-    if(hasOne.err){
+    if (hasOne.err) {
       res.print(hasOne);
-    }else{
+    } else {
       let oper = !hasOne.data || Util.isEmpty(hasOne.data) ? 'create' : 'update',
         data = params.data;
-      if(hasOne.data && !Util.isEmpty(hasOne.data)) {
+      if (hasOne.data && !Util.isEmpty(hasOne.data)) {
         data = Object.assign(hasOne.data, params.data);
       }
       const result = await catchErr(Model('users')[oper](data));
