@@ -215,7 +215,7 @@ class Model {
         if(result.err){
           throw error(result.err);
         }else{
-          return result.data;
+          return Array.isArray(result.data) ? result.data[0] : result.data;
         }
       } else {
         await new Promise((resolve, reject) => {
@@ -233,7 +233,7 @@ class Model {
     if (CONFIG.isDebug) console.warn(`data ${oper}: ${JSON.stringify(data)}`);
     if (this.db[oper]) {
       if (data.aggregate.length) {
-        return this.db.aggregate(data.aggregate, oper == 'findOne' ? true : false);
+        return this.db.aggregate(data.aggregate);
       } else {
         return this.db[oper](data);
       }
