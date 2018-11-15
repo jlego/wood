@@ -21,8 +21,11 @@ class Mongo {
     if (obj._isQuery) {
       return obj.toJSON();
     } else {
-      if (obj.where._id) obj.where._id = ObjectId(obj.where._id);
-      if (!obj.where) obj = { where: obj };
+      if (!obj.where) {
+        obj = { where: obj };
+      }else{
+        if (obj.where._id) obj.where._id = ObjectId(obj.where._id);
+      }
       let query = new Query(obj);
       return query.toJSON();
     }
