@@ -185,7 +185,7 @@ class App{
       // mongodb
       if(CONFIG.mongodb){
         for(let key in CONFIG.mongodb){
-          Mongo.connect(CONFIG.mongodb[key].dburl, key, (err, client) => {
+          Mongo.connect(CONFIG.mongodb[key], key, (err, client) => {
             if(CONFIG.defaultDB === 'mongodb' && key === 'master') this.init();
           });
         }

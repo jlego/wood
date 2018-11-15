@@ -48,12 +48,7 @@ class Mongo {
   // 查询单条记录
   findOne(params = {}) {
     let data = this._getParams(params);
-    return new Promise((resolve, reject) => {
-      this.collection.findOne(data.where, data.select || {}, (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      });
-    });
+    return this.collection.findOne(data.where, data.select);
   }
   // 删除
   remove(params = {}) {
@@ -112,21 +107,35 @@ class Mongo {
       });
     });
   }
-  static connect(url, database = 'master', callback) {
-    mongodb.MongoClient.connect(url, (err, client) => {
+  static connect(opts, name = 'master', callback) {
+    let dbName = '', authStr, hostStr;
+    if(typeof opts === 'object'){
+      dbName = opts.dbName;
+      authStr = `${opts.user && opts.password ? `${opts.user}:${opts.password}@` : ''}`;
+      hostStr = opts.replset && opts.replset.hosts ? opts.replset.hosts.join(',') : `${opts.host}:${opts.port}`;
+      opts = `mongodb://${authStr}${hostStr}/${opts.dbName}${opts.replset ? `?replicaSet=${opts.replset.name}` : ''}`;
+    }else{
+      let index = opts.indexOf('?replicaSet');
+      if(index > 0) opts = opts.slice(0, index);
+      let optsArr = opts.split('/');
+      dbName = optsArr[optsArr.length - 1];
+    }
+    console.warn(opts);
+    
+    mongodb.MongoClient.connect(opts, (err, client) => {
       if (err) {
-        console.log(`MongoDB [${database}] failed :` + err.message);
-        dbs[database] = null;
+        console.log(`MongoDB [${name}] failed :` + err.message);
+        dbs[name] = null;
         if (callback) callback(err);
       } else {
-        console.log(`MongoDB [${database}] connected Successfull`);
-        dbs[database] = client;
-        if (callback) callback(err, client);
+        console.log(`MongoDB [${name}] connected Successfull`);
+        dbs[name] = client.db(dbName);
+        if (callback) callback(err, dbs[name]);
       }
     });
   }
-  static close(database = 'master'){
-    dbs[database].close();
+  static close(name = 'master'){
+    dbs[name].close();
   }
 }
 
