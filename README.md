@@ -64,6 +64,6 @@
 路由(/routes/userRouter.js)
 
     const { Router, Controller } = require('wood-node');
-    const UserController = Controller('user');
-    Router.put('/project/user/add', UserController.userList.bind(UserController));
-    module.exports = Router;
+    const router = Router('user');
+    router.put('/project/user/add', Controller('user').userList);
+    module.exports = router;
