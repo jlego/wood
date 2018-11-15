@@ -3,7 +3,6 @@ const {
   Model,
   error,
   catchErr,
-  Mongo,
   Query,
   Util
 } = require('../../index');
