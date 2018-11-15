@@ -38,7 +38,7 @@ class App{
     this.models = models;
     this.controllers = controllers;
   }
-  // 查询条件对象
+  // 路由
   Router(controllerName) {
     return new Router(controllerName);
   }
