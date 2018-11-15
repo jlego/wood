@@ -150,7 +150,7 @@ class App{
 
     app.use(function(req, res, next) {
       res.status(404);
-      res.print(this.config.error_code.error_noroute);
+      res.print(this.error_code.error_noroute);
     });
     // 拦截其他异常
     process.on('uncaughtException', function (err) {
