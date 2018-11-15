@@ -12,6 +12,7 @@
   "author": "yuronghui",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.3"
+    "bluebird": "^3.5.3",
+    "mongodb": "^3.1.9"
   }
 }

@@ -7,6 +7,11 @@ let UserModel = Model('master.users', new Fields({
     required: true,
     index: true
   },
+  "uid": {
+    type: 'Number',
+    required: true,
+    index: true
+  },
   //注册名(唯一)
   "username": {
     type: 'String',

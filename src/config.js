@@ -17,9 +17,34 @@ module.exports = {
   },
   service: {},
   defaultDB: 'mongodb', //默认数据库
-  mongodb: {},
-  mysql: {},
-  redis: {},
+  mongodb: {
+    // master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
+    // master: {
+    //   dbName: 'test',
+    //   host: ['10.0.1.26:51801','10.0.1.26:51802','10.0.1.26:51803','10.0.1.26:51804'],
+    //   port: '',
+    //   user: '',
+    //   password: '',
+    //   replset: 'rs0',
+    //   readPreference: 'secondaryPreferred'
+    // },
+    // slave1: 'mongodb://127.0.0.1:27017/test',
+  },
+  mysql: {
+    // test: {
+    //   host: '127.0.0.1',
+    //   user: 'root',
+    //   password: '123456'
+    // },
+    // ...
+  },
+  redis: {
+    // master: {
+    //   port: 6379,
+    //   host: '127.0.0.1',
+    //   dbnum: 10
+    // }
+  },
   tcp: {},
   registerDirs: {
     route: './routes',
