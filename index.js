@@ -171,8 +171,8 @@ class App{
   }
   // 启动应用
   start(opts) {
-    if(opts) Object.assign(CONFIG, opts);
-    if(!isEmpty(CONFIG)){
+    if(opts) Object.assign(this.config, opts);
+    if(!isEmpty(this.config)){
       // redis
       if(this.config.redis) {
         for(let key in this.config.redis){
