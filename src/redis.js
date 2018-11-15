@@ -11,7 +11,7 @@ class Redis {
     if(!db) throw error('redis failed: db=null');
   }
   getKey(key){
-    let str = `${CONFIG.projectName}:${this.tbname}`;
+    let str = `${APP.config.projectName}:${this.tbname}`;
     return key ? `${str}:${key}` : str;
   }
   // 新行id

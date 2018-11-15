@@ -34,7 +34,7 @@ class Mongo {
   index(data = {}, opts = {
     background: true
   }) {
-    if (CONFIG.isDebug) console.warn(`建立索引: ${JSON.stringify(data)}`);
+    if (APP.config.isDebug) console.warn(`建立索引: ${JSON.stringify(data)}`);
     this.collection.createIndex(data, opts);
   }
   // 查询全部记录
