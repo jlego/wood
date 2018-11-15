@@ -115,13 +115,11 @@ class Mongo {
       hostStr = opts.replset && opts.replset.hosts ? opts.replset.hosts.join(',') : `${opts.host}:${opts.port}`;
       opts = `mongodb://${authStr}${hostStr}/${opts.dbName}${opts.replset ? `?replicaSet=${opts.replset.name}` : ''}`;
     }else{
-      let index = opts.indexOf('?replicaSet');
-      if(index > 0) opts = opts.slice(0, index);
-      let optsArr = opts.split('/');
+      let index = opts.indexOf('?replicaSet'), _opts = opts;
+      if(index > 0) _opts = opts.slice(0, index);
+      let optsArr = _opts.split('/');
       dbName = optsArr[optsArr.length - 1];
     }
-    console.warn(opts);
-    
     mongodb.MongoClient.connect(opts, (err, client) => {
       if (err) {
         console.log(`MongoDB [${name}] failed :` + err.message);
