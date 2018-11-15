@@ -81,12 +81,14 @@ class Mongo {
     return this.collection.aggregate(params);
   }
   static connect(opts, name = 'master', callback) {
-    let dbName = '', authStr, hostStr;
+    let dbName = '';
     if(typeof opts === 'object'){
+      let authStr, hostStr, readPreference;
       dbName = opts.dbName;
       authStr = `${opts.user && opts.password ? `${opts.user}:${opts.password}@` : ''}`;
       hostStr = Array.isArray(opts.host) ? opts.host.join(',') : `${opts.host}:${opts.port}`;
-      opts = `mongodb://${authStr}${hostStr}/${opts.dbName}${opts.replset ? `?replicaSet=${opts.replset}` : ''}`;
+      readPreference = opts.readPreference ? `&readPreference=${opts.readPreference}` : '';
+      opts = `mongodb://${authStr}${hostStr}/${opts.dbName}${opts.replset ? `?replicaSet=${opts.replset}${readPreference}` : ''}`;
     }else{
       let index = opts.indexOf('?replicaSet'), _opts = opts;
       if(index > 0) _opts = opts.slice(0, index);
