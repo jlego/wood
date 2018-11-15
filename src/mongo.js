@@ -7,11 +7,11 @@ const ObjectId = mongodb.ObjectID;
 let dbs = {};
 
 class Mongo {
-  constructor(tbname, database = 'master') {
+  constructor(tbname, db = 'master') {
     this.tableName = tbname;
-    this.database = database;
-    if(dbs[this.database]) {
-      this.collection = dbs[this.database].collection(this.tableName);
+    this.db = db;
+    if(dbs[this.db]) {
+      this.collection = dbs[this.db].collection(this.tableName);
     }else{
       throw error('mongodb failed: db=null');
     }
