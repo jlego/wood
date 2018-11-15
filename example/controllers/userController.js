@@ -17,8 +17,7 @@ class UserController extends controller {
       res.print('uid不能为空');
       return;
     }
-    let query = Query().where({ uid: params.data.uid });
-    const hasOne = await catchErr(Model('users').findOne(query));
+    const hasOne = await catchErr(Model('users').findOne({ uid: params.data.uid }));
     if (hasOne.err) {
       res.print(hasOne);
     } else {
