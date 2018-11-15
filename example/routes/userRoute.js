@@ -1,11 +1,10 @@
 const { Router, Controller } = require('../../index');
 const multipart = require('connect-multiparty');
-const controller = Controller('user');
 
-Router.put('/user/list', controller.list.bind(controller));
+Router('user').put('/user/list', Controller('user').list);
 
-Router.put('/user/detail', controller.detail.bind(controller));
+Router('user').put('/user/detail', Controller('user').detail);
 // 添加用户
-Router.put('/user/add', controller.add.bind(controller));
+Router('user').put('/user/add', Controller('user').add);
 
 module.exports = Router;

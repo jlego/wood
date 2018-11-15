@@ -10,7 +10,7 @@ global.CONFIG = require('./src/config') || {};
 const Mongo = require('./src/mongo');
 const Mysql = require('./src/mysql');
 const Redis = require('./src/redis');
-const Router = express.Router();
+const Router = require('./src/router');
 const Util = require('./src/util');
 const Middlewares = require('./src/middleware');
 const Model = require('./src/model');
@@ -25,7 +25,6 @@ const controllers = new Map();
 
 class App{
   constructor(){
-    this.Router = Router;
     this.Fields = Fields;
     this.Modelsql = Modelsql;
     this.Tcp = Tcp;
@@ -38,6 +37,10 @@ class App{
     this.Redis = Redis;
     this.models = models;
     this.controllers = controllers;
+  }
+  // 查询条件对象
+  Router(controllerName) {
+    return new Router(controllerName);
   }
   // 查询条件对象
   Query(req = {}) {
@@ -126,12 +129,12 @@ class App{
         }
       });
     });
-    app.use('/', Router);
+    app.use('/', this.Router().getRouter());
 
     // 生成api文档
     if(CONFIG.buildDocx){
       const Docx = require('./src/docx');
-      app.use('/', Router.get(Docx.path, Docx.fun));
+      app.use('/', this.Router().get(Docx.path, Docx.fun));
     }
 
     // 返回错误信息
