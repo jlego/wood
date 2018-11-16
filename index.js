@@ -19,11 +19,13 @@ const Query = require('./src/query');
 const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
-const Errorcode = require('./errorcode');
+const Errorcode = require('./src/errorcode');
 const { error, catchErr, isEmpty } = Util;
-const models = new Map();
-const controllers = new Map();
-const routers = new Map();
+const _models = new Map();
+const _controllers = new Map();
+const _routers = new Map();
+const _middlewares = new Map();
+const _plugins = new Map();
 
 class App{
   constructor(){
@@ -37,13 +39,19 @@ class App{
     this.Mongo = Mongo;
     this.Mysql = Mysql;
     this.Redis = Redis;
+    this.models = _models;
+  }
+  Middleware(name, fun){
+    if(!_middlewares.has(name) && fun) _middlewares.set(name, fun);
+    return _middlewares.get(name);
   }
   // 路由
   Router(controllerName) {
-    if(routers.has(controllerName)){
-      return routers.get(controllerName);
+    if(_routers.has(controllerName)){
+      return _routers.get(controllerName);
     }else{
-      let _router = routers.set(controllerName, new Router(controllerName));
+      let _router = new Router(controllerName, _controllers);
+      if(controllerName) _routers.set(controllerName, _router);
       return _router;
     }
   }
@@ -53,8 +61,8 @@ class App{
   }
   // 控制器
   Controller(modelName) {
-    if(modelName && controllers.has(modelName)){
-      return controllers.get(modelName);
+    if(modelName && _controllers.has(modelName)){
+      return _controllers.get(modelName);
     }
     return Controller;
   }
@@ -64,8 +72,8 @@ class App{
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
     if(tableName){
-      if(models.has(tableName)){
-        let _model = models.get(tableName);
+      if(_models.has(tableName)){
+        let _model = _models.get(tableName);
         _model.resetData();
         return _model;
       }
@@ -77,20 +85,12 @@ class App{
         });
         theModel.redis = new Redis(tableName);
         theModel.db = new Mongo(tableName, dbName);
-        models.set(tableName, theModel);
+        _models.set(tableName, theModel);
         theModel._init();
-        return models.get(tableName);
+        return _models.get(tableName);
       }
     }
     return Model;
-  }
-  // 添加中间件
-  use(opts){
-    if(typeof opts === 'object'){
-      Object.assign(Middlewares, opts);
-    }else if(typeof opts === 'function'){
-      Middlewares[opts.name] = opts;
-    }
   }
   // 初始化应用
   init() {
@@ -101,18 +101,18 @@ class App{
 
     // 跨域
     if (this.config.crossDomain) {
-      app.all('*',
-        function(req, res, next) {
-          res.header("Access-Control-Allow-Origin", req.headers.origin);
+      app.all('*', (req, res, next) => {
+          res.header("Access-Control-Allow-Origin", this.config.crossDomain);
           res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
           res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
           res.header("Access-Control-Allow-Credentials", true);
           next();
         });
     }
+    
     // 内置中间件
-    app.use(Middlewares.responseFormat);
-    app.use(Middlewares.requestBody);
+    app.use(this.Middleware('responseFormat', Middlewares.responseFormat));
+    app.use(this.Middleware('requestBody', Middlewares.requestBody));
 
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
@@ -126,9 +126,9 @@ class App{
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
           if(type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-            if(!controllers.has(controllerName)){
-              theModule = typeof theModule === 'function' ? new theModule() : theModule;
-              controllers.set(controllerName, theModule);
+            if(!_controllers.has(controllerName)){
+              theModule = typeof theModule === 'function' ? new theModule({}, _models) : theModule;
+              _controllers.set(controllerName, theModule);
             }
           }
         }

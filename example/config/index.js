@@ -14,7 +14,7 @@ module.exports = {
   isDebug: true, //是否开启调试模式
 	buildDocx: false,
 	session: false, //是否开启session   false / {}
-	crossDomain: true, //是否支持跨域
+	crossDomain: false, //是否支持跨域
 	service,
 	mongodb,
 	mysql,
