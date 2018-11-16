@@ -4,14 +4,14 @@ const { error, catchErr, getParams } = require('./util');
 const Query = require('./query');
 
 class Controller {
-  constructor(opts = {}) {
+  constructor(opts = {}, models) {
     this.defaultModel = opts.defaultModel || '';
     this.addLock = opts.addLock || true;
     this.hasCheck = opts.hasCheck || true;
   }
   //列表
   async list(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req),
         page = Number(body.data.page) || 1,
         limit = Number(body.data.limit) || 20,
@@ -19,6 +19,7 @@ class Controller {
     body.data.largepage = largepage;
     let query = Query.getQuery(req).limit(limit);
     const result = await catchErr(Model.findList(query, this.addLock));
+    
     if(result.err){
       res.print(result);
     }else{
@@ -35,14 +36,14 @@ class Controller {
   }
   //详情  
   async detail(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req);
     const result = await catchErr(Model.findOne(body.data, this.addLock));
     res.print(result);
   }
   //新增
   async create(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req),
         result = {};
     if(Array.isArray(body.data)){
@@ -56,7 +57,7 @@ class Controller {
   }
   //修改
   async update(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req);
     if(Array.isArray(body.data)){
       let allResult = {};
@@ -80,14 +81,14 @@ class Controller {
   }
   // 删除
   async remove(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req);
     const result = await catchErr(Model.remove(body.data));
     res.print(result);
   }
   // 软删除
   async softRemove(req, res, next) {
-    let Model = CTX.models.get(this.defaultModel),
+    let Model = APP.models.get(this.defaultModel),
         body = getParams(req);
     body.data.status = -1;
     const result = await catchErr(Model.update(body.data, this.addLock, this.hasCheck));

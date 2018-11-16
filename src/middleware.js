@@ -49,31 +49,4 @@ module.exports = {
     }
     next();
   },
-  // 是否验证身份中间件
-  verifyLogin(req, res, next){
-    let secretkey = req.headers.secretkey;
-    if(secretkey){
-      if(secretkey !== APP.config.secretKey){
-        res.print(APP.error_code.error);
-        return false;
-      }
-      next();
-    }else{
-      if(APP.config.verifyLogin) {
-        let redisClient = new Redis.client('account');
-        const token = new Token(req.headers.project || '', redisClient);
-        token.verify(req, res, (err) => {
-          if(err) {
-            return res.print(req.method == 'OPTIONS' ? {} : Util.error({
-              code: 60000,
-              msg: err
-            }));
-          }
-          next();
-        });
-      }else{
-        next();
-      }
-    }
-  },
 };

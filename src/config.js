@@ -8,10 +8,12 @@ module.exports = {
   secretKey: 'WOODNODE', //私密串
   isDebug: true, //是否开启调试模式
   buildDocx: false, //是否生成文档
-  crossDomain: true, //是否支持跨域
+  crossDomain: true, //是否支持跨域 *
   secretkeys: {  //其他项目的请求私密串
     example: '',
   },
+  errorCode: {}, //错误码
+  plugins: {}, //插件
   service: {},
   defaultDB: 'mongodb', //默认数据库
   mongodb: {
