@@ -20,7 +20,7 @@ const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
 const Errorcode = require('./src/errorcode');
-// const Plugin = require('./src/plugin');
+const plugin = require('./src/plugin');
 const { error, catchErr, isEmpty } = Util;
 const _models = new Map();
 const _controllers = new Map();
@@ -51,7 +51,7 @@ class App {
   Router(controllerName) {
     if(_routers.has(controllerName)){
       return _routers.get(controllerName);
-    }else{
+    } else {
       let _router = new Router(controllerName, _controllers);
       if(controllerName) _routers.set(controllerName, _router);
       return _router;
@@ -94,9 +94,13 @@ class App {
     }
     return Model;
   }
+  Plugin(pluginName) {
+    return this._plugins.get(pluginName);
+  }
+
   // 初始化应用
   init() {
-    const app = this.express = express();
+    const app = express();
     if (!this.config.isDebug) app.set('env', 'production');
     app.use(express.static('docs'));
     app.use(bodyParser.json());
@@ -104,14 +108,21 @@ class App {
     // 跨域
     if (this.config.crossDomain) {
       app.all('*', (req, res, next) => {
-          res.header("Access-Control-Allow-Origin", this.config.crossDomain);
-          res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
-          res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-          res.header("Access-Control-Allow-Credentials", true);
-          next();
-        });
+        res.header("Access-Control-Allow-Origin", this.config.crossDomain);
+        res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
+        res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+        res.header("Access-Control-Allow-Credentials", true);
+        next();
+      });
     }
-    
+
+    // 内置中间件
+    app.use(this.Middleware('responseFormat', Middlewares.responseFormat));
+    app.use(this.Middleware('requestBody', Middlewares.requestBody));
+
+    //设置插件
+    this._plugins = new plugin(app).getPlugin();
+
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
       let dirPath = this.config.registerDirs[type];
