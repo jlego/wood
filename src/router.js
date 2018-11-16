@@ -3,8 +3,9 @@
 const router = require('express').Router();
 
 class Router {
-  constructor(controllerName) {
+  constructor(controllerName, controllers) {
     this.controllerName = controllerName;
+    this.controllers = controllers;
   }
 
   getRouter(){
@@ -16,7 +17,7 @@ class Router {
       let pathMatch = argus.shift(),
         fun = argus.pop(),
         methodArr = ['get', 'post', 'put', 'delete'];
-      if(this.controllerName) fun = fun.bind(APP.controllers.get(this.controllerName));
+      if(this.controllerName && this.controllers) fun = fun.bind(this.controllers.get(this.controllerName));
       if(methodArr.includes(method)) router[method](pathMatch, ...argus, fun);
     }
   }
