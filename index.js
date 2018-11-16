@@ -20,7 +20,7 @@ const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
 const Errorcode = require('./src/errorcode');
-const Plugin = require('./src/plugin');
+// const Plugin = require('./src/plugin');
 const { error, catchErr, isEmpty } = Util;
 const _models = new Map();
 const _controllers = new Map();
@@ -112,7 +112,6 @@ class App {
         });
     }
     
-
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
       let dirPath = this.config.registerDirs[type];
@@ -137,9 +136,9 @@ class App {
     // 中间件
     this.Middleware('responseFormat', Middlewares.responseFormat);
     this.Middleware('requestBody', Middlewares.requestBody);
-    for(let key of this.Middleware){
-      app.use(this.Middleware(key));
-    }
+    _middlewares.forEach((fun, key) => {
+      app.use(fun);
+    });
     // 加载路由
     app.use('/', this.Router().getRouter());
 
@@ -209,6 +208,4 @@ class App {
     }
   }
 };
-global.APP = new App();
-new plugin({ app: global.APP, express: global.express })
-module.exports = global.APP;
+module.exports = global.APP = new App();
