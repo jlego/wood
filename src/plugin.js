@@ -2,20 +2,23 @@
  * @Author: Jc 
  * @Date: 2018-11-16 14:39:12 
  * @Last Modified by: Jc
- * @Last Modified time: 2018-11-16 15:45:04
+ * @Last Modified time: 2018-11-16 17:57:43
  * @Des: 插件功能类
  */
 
 const path = require('path'),
     fs = require('fs');
 
-export default class Plugin {
+function isDev() {
+    return 'development' == process.env.NODE_ENV;
+}
+
+class Plugin {
     constructor(context) {
         this.context = context;
-        this.setupPulgin();
     }
     get path() {
-        return path.join(__dirname, '/plugin/index.js')
+        return path.resolve('./config/plugin.js')
     }
     getConfig() {
         if (fs.existsSync(this.path)) {
@@ -23,16 +26,17 @@ export default class Plugin {
         }
         return undefined;
     }
-    setupPulgin() {
-        const pluginConfig = this.getConfig();
+    getPlugin() {
+        const pluginConfig = this.getConfig(),
+            pluginMap = new Map();
         if (pluginConfig && Object.keys(pluginConfig).length > 0) {
             Object.keys(pluginConfig).map(field => {
                 let plugin = pluginConfig[field],
                     envOpen = this._inspectEnvOpen(plugin);
                 if (plugin.enable && envOpen) {
-                    let pluginPackage = require(plugin.package);
+                    let pluginPackage = require(path.resolve('./node_modules/', plugin.package));
                     try {
-                        typeof pluginPackage === "function" && pluginPackage(this.context);
+                        pluginMap.set(field, typeof pluginPackage === "function" && pluginPackage(this.context));
                     }
                     catch (error) {
                         console.error(error)
@@ -43,9 +47,14 @@ export default class Plugin {
                 }
             })
         }
+        if (isDev())
+            console.log('pluginMap：', pluginMap);
+        return pluginMap;
     }
 
     _inspectEnvOpen(plugin) {
-        return !(plugin in "env") || plugin.env == process.env.NODE_ENV;
+        return !("env" in plugin) || plugin.env == process.env.NODE_ENV;
     }
 }
+
+module.exports = Plugin;

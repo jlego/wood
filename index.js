@@ -20,10 +20,7 @@ const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
 const Errorcode = require('./src/errorcode');
-<<<<<<< HEAD
 const plugin = require('./src/plugin');
-=======
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
 const { error, catchErr, isEmpty } = Util;
 const _models = new Map();
 const _controllers = new Map();
@@ -45,24 +42,17 @@ class App {
     this.Redis = Redis;
     this.models = _models;
   }
-  Middleware(name, fun){
-    if(!_middlewares.has(name) && fun) _middlewares.set(name, fun);
+  Middleware(name, fun) {
+    if (!_middlewares.has(name) && fun) _middlewares.set(name, fun);
     return _middlewares.get(name);
   }
   // 路由
   Router(controllerName) {
-<<<<<<< HEAD
-    if (routers.has(controllerName)) {
-      return routers.get(controllerName);
-    } else {
-      let _router = routers.set(controllerName, new Router(controllerName));
-=======
-    if(_routers.has(controllerName)){
+    if (_routers.has(controllerName)) {
       return _routers.get(controllerName);
-    }else{
+    } else {
       let _router = new Router(controllerName, _controllers);
-      if(controllerName) _routers.set(controllerName, _router);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
+      if (controllerName) _routers.set(controllerName, _router);
       return _router;
     }
   }
@@ -72,13 +62,8 @@ class App {
   }
   // 控制器
   Controller(modelName) {
-<<<<<<< HEAD
-    if (modelName && controllers.has(modelName)) {
-      return controllers.get(modelName);
-=======
-    if(modelName && _controllers.has(modelName)){
+    if (modelName && _controllers.has(modelName)) {
       return _controllers.get(modelName);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
     }
     return Controller;
   }
@@ -87,15 +72,9 @@ class App {
     let nameArr = _tableName.split('.'),
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
-<<<<<<< HEAD
     if (tableName) {
-      if (models.has(tableName)) {
-        let _model = models.get(tableName);
-=======
-    if(tableName){
-      if(_models.has(tableName)){
+      if (_models.has(tableName)) {
         let _model = _models.get(tableName);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
         _model.resetData();
         return _model;
       }
@@ -114,44 +93,34 @@ class App {
     }
     return Model;
   }
-<<<<<<< HEAD
-  // 添加中间件
-  use(opts) {
-    if (typeof opts === 'object') {
-      Object.assign(Middlewares, opts);
-    } else if (typeof opts === 'function') {
-      Middlewares[opts.name] = opts;
-    }
+  Plugin(pluginName) {
+    return this._plugins.get(pluginName);
   }
-=======
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
+
   // 初始化应用
   init() {
-    const app = this.express = express();
+    const app = express();
     if (!this.config.isDebug) app.set('env', 'production');
     app.use(express.static('docs'));
     app.use(bodyParser.json());
 
     // 跨域
     if (this.config.crossDomain) {
-<<<<<<< HEAD
-      app.all('*',
-        function (req, res, next) {
-          res.header("Access-Control-Allow-Origin", req.headers.origin);
-=======
       app.all('*', (req, res, next) => {
-          res.header("Access-Control-Allow-Origin", this.config.crossDomain);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
-          res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
-          res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-          res.header("Access-Control-Allow-Credentials", true);
-          next();
-        });
+        res.header("Access-Control-Allow-Origin", this.config.crossDomain);
+        res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
+        res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+        res.header("Access-Control-Allow-Credentials", true);
+        next();
+      });
     }
-    
+
     // 内置中间件
     app.use(this.Middleware('responseFormat', Middlewares.responseFormat));
     app.use(this.Middleware('requestBody', Middlewares.requestBody));
+
+    //设置插件
+    this._plugins = new plugin(app).getPlugin();
 
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
@@ -165,15 +134,9 @@ class App {
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
           if (type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-<<<<<<< HEAD
-            if (!controllers.has(controllerName)) {
-              theModule = typeof theModule === 'function' ? new theModule() : theModule;
-              controllers.set(controllerName, theModule);
-=======
-            if(!_controllers.has(controllerName)){
+            if (!_controllers.has(controllerName)) {
               theModule = typeof theModule === 'function' ? new theModule({}, _models) : theModule;
               _controllers.set(controllerName, theModule);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
             }
           }
         }
@@ -250,5 +213,4 @@ class App {
   }
 };
 global.APP = global.CTX = new App();
-new plugin({ app: global.APP, express: global.express })
 module.exports = global.APP;
