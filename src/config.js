@@ -12,6 +12,7 @@ module.exports = {
   secretkeys: {  //其他项目的请求私密串
     example: '',
   },
+  errorCode: {}, //错误码
   plugins: {}, //插件
   service: {},
   defaultDB: 'mongodb', //默认数据库

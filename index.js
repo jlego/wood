@@ -31,7 +31,7 @@ const _plugins = new Map();
 class App {
   constructor() {
     this.config = config || {}
-    this.error_code = Errorcode,  // 错误码
+    this.error_code = Object.assign(Errorcode, config.errorCode || {});  // 错误码
     this.Fields = Fields;
     this.Tcp = Tcp;
     this.Util = Util;
