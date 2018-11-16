@@ -41,6 +41,7 @@ class App{
     this.Redis = Redis;
     this.models = _models;
   }
+  // 中间件
   Middleware(name, fun){
     if(!_middlewares.has(name) && fun) _middlewares.set(name, fun);
     return _middlewares.get(name);
