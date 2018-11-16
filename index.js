@@ -22,6 +22,7 @@ const Tcp = require('./src/tcp');
 const { error, catchErr, isEmpty } = Util;
 const models = new Map();
 const controllers = new Map();
+const routers = new Map();
 
 class App{
   constructor(){
@@ -40,16 +41,21 @@ class App{
   }
   // 路由
   Router(controllerName) {
-    return new Router(controllerName);
+    if(routers.has(controllerName)){
+      return routers.get(controllerName);
+    }else{
+      let _router = routers.set(controllerName, new Router(controllerName));
+      return _router;
+    }
   }
   // 查询条件对象
   Query(req = {}) {
     return Query.getQuery(req);
   }
   // 控制器
-  Controller(name) {
-    if(name && controllers.has(name)){
-      return controllers.get(name);
+  Controller(modelName) {
+    if(modelName && controllers.has(modelName)){
+      return controllers.get(modelName);
     }
     return Controller;
   }
