@@ -86,7 +86,7 @@ class Fields {
   }
 
   _validateError(key, field) {
-    let errObj = Util.deepCopy(CONFIG.error_code.error_validation);
+    let errObj = Util.deepCopy(APP.error_code.error_validation);
     errObj.name = field.alias;
     errObj.dataType = field.type;
     if (typeof field === 'object') {

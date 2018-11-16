@@ -5,7 +5,7 @@ const net = require('net');
 class Tcp {
   constructor(opts = {}) {
     if(!opts.name) console.error('tcp服务名不能为空！');
-    this.config = CONFIG.tcp[opts.name] || {};
+    this.config = APP.config.tcp[opts.name] || {};
     this.options = {
       name: '',   //此值对应着配置的key
       isStart: true,

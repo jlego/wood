@@ -30,11 +30,11 @@ class Model {
     for (let key in fieldMap) {
       obj[key] = {
         get() {
-          if (CONFIG.isDebug) console.warn(`getter: ${key}`);
+          if (APP.config.isDebug) console.warn(`getter: ${key}`);
           return fieldMap[key].value || fieldMap[key].defaultValue;
         },
         set(val) {
-          if (CONFIG.isDebug) console.warn(`setter: ${key}, ${val}`);
+          if (APP.config.isDebug) console.warn(`setter: ${key}, ${val}`);
           fieldMap[key].value = val;
         }
       }
@@ -49,7 +49,7 @@ class Model {
       if (key == '_id') continue;
       // 建索引
       if (item.index) {
-        if(cluster.worker == null || CONFIG.service.initloop.workerid == cluster.worker.id){
+        if(cluster.worker == null || APP.config.service.initloop.workerid == cluster.worker.id){
           let indexField = {};
           indexField[key] = item.index == 'text' ? item.index : 1 ;
           this.db.index(indexField);
@@ -102,7 +102,7 @@ class Model {
     if (!data) throw error('create方法的参数data不能为空');
     if(!isEmpty(data)) this.setData(data);
     let rowid = await this.redis.rowid();
-    if (CONFIG.isDebug) console.warn('新增rowid: ', rowid);
+    if (APP.config.isDebug) console.warn('新增rowid: ', rowid);
     if (rowid || data.rowid == 0) {
       this.setData('rowid', rowid);
       let err = hascheck ? this.fields.validate() : false;
@@ -194,7 +194,7 @@ class Model {
 
   // 执行查询
   exec(oper = 'find', data) {
-    if (CONFIG.isDebug) console.warn(`data ${oper}: ${JSON.stringify(data)}`);
+    if (APP.config.isDebug) console.warn(`data ${oper}: ${JSON.stringify(data)}`);
     if (this.db[oper]) {
       if (data.aggregate.length) {
         return this.db.aggregate(data.aggregate);
@@ -202,7 +202,7 @@ class Model {
         return this.db[oper](data);
       }
     }
-    return error(CONFIG.error_code.error_nodata);
+    return error(APP.error_code.error_nodata);
   }
 
   // 查询单条记录
@@ -272,7 +272,7 @@ class Model {
         }else{
           query = Query.getQuery({body: { data }});
         }
-        // if (CONFIG.isDebug) console.warn(`请求列表, ${hasKey ? '有' : '无'}listKey`, isEmpty(this.relation));
+        // if (APP.config.isDebug) console.warn(`请求列表, ${hasKey ? '有' : '无'}listKey`, isEmpty(this.relation));
         if (!isEmpty(this.select)) query.select(this.select);
         if (!isEmpty(this.relation)) query.populate(this.relation);
         let counts = this.db.count(query),

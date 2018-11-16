@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 global.Promise = require("bluebird");
-global.CONFIG = require('./src/config') || {};
+const config = require('./src/config');
 const Mongo = require('./src/mongo');
 const Mysql = require('./src/mysql');
 const Redis = require('./src/redis');
@@ -19,6 +19,7 @@ const Query = require('./src/query');
 const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
+const Errorcode = require('./errorcode');
 const { error, catchErr, isEmpty } = Util;
 const models = new Map();
 const controllers = new Map();
@@ -26,18 +27,16 @@ const routers = new Map();
 
 class App{
   constructor(){
+    this.config = config || {}
+    this.error_code = Errorcode,  // 错误码
     this.Fields = Fields;
-    this.Modelsql = Modelsql;
     this.Tcp = Tcp;
-    this.Middlewares = Middlewares;
     this.Util = Util;
     this.error = error;
     this.catchErr = catchErr;
     this.Mongo = Mongo;
     this.Mysql = Mysql;
     this.Redis = Redis;
-    this.models = models;
-    this.controllers = controllers;
   }
   // 路由
   Router(controllerName) {
@@ -96,16 +95,16 @@ class App{
   // 初始化应用
   init() {
     const app = express();
-    if(!CONFIG.isDebug) app.set('env', 'production');
+    if(!this.config.isDebug) app.set('env', 'production');
     app.use(express.static('docs'));
     app.use(bodyParser.json());
 
     // 跨域
-    if (CONFIG.crossDomain) {
+    if (this.config.crossDomain) {
       app.all('*',
         function(req, res, next) {
           res.header("Access-Control-Allow-Origin", req.headers.origin);
-          res.header("Access-Control-Allow-Headers", CONFIG.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
+          res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
           res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
           res.header("Access-Control-Allow-Credentials", true);
           next();
@@ -117,7 +116,7 @@ class App{
 
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
-      let dirPath = CONFIG.registerDirs[type];
+      let dirPath = this.config.registerDirs[type];
       const dirList = fs.readdirSync(path.resolve(__dirname, dirPath));
       dirList.forEach((fileName) => {
         let nameArr = fileName.split('.'),
@@ -135,10 +134,12 @@ class App{
         }
       });
     });
+
+    // 加载路由
     app.use('/', this.Router().getRouter());
 
     // 生成api文档
-    if(CONFIG.buildDocx){
+    if(this.config.buildDocx){
       const Docx = require('./src/docx');
       app.use('/', this.Router().get(Docx.path, Docx.fun));
     }
@@ -155,17 +156,17 @@ class App{
 
     app.use(function(req, res, next) {
       res.status(404);
-      res.print(CONFIG.error_code.error_noroute);
+      res.print(this.error_code.error_noroute);
     });
-
+    // 拦截其他异常
     process.on('uncaughtException', function (err) {
       console.log('Caught exception: ', err);
     });
 
     // 监听服务端口
-    if(CONFIG.openHttpServer){
+    if(this.config.openHttpServer){
       const httpServer = app.listen(
-        CONFIG.service.http_server.listenport,
+        this.config.service.http_server.listenport,
         function() {
           let host = httpServer.address().address;
           let port = httpServer.address().port;
@@ -174,27 +175,27 @@ class App{
       );
     }
   }
-  // 启动
+  // 启动应用
   start(opts) {
-    if(opts) Object.assign(CONFIG, opts);
-    if(!isEmpty(CONFIG)){
+    if(opts) Object.assign(this.config, opts);
+    if(!isEmpty(this.config)){
       // redis
-      if(CONFIG.redis) {
-        for(let key in CONFIG.redis){
-          Redis.connect(CONFIG.redis[key]);
+      if(this.config.redis) {
+        for(let key in this.config.redis){
+          Redis.connect(this.config.redis[key]);
         }
       }
       // mysql
-      if(CONFIG.mysql){
+      if(this.config.mysql){
         new Mysql().connect().then(() => {
-          if(CONFIG.defaultDB === 'mysql') this.init();
+          if(this.config.defaultDB === 'mysql') this.init();
         });
       }
       // mongodb
-      if(CONFIG.mongodb){
-        for(let key in CONFIG.mongodb){
-          Mongo.connect(CONFIG.mongodb[key], key, (err, client) => {
-            if(CONFIG.defaultDB === 'mongodb' && key === 'master') this.init();
+      if(this.config.mongodb){
+        for(let key in this.config.mongodb){
+          Mongo.connect(this.config.mongodb[key], key, (err, client) => {
+            if(this.config.defaultDB === 'mongodb' && key === 'master') this.init();
           });
         }
       }

@@ -17,7 +17,7 @@ class Model {
       tableName: '', //集合名
       fields: {}, //集合字段
       select: [], //只返回的字段
-      database: Object.keys(CONFIG.mysql)[0],
+      database: Object.keys(APP.config.mysql)[0],
       ...opts
     };
     if (!this._options.tableName) console.error('表名不能为空');
@@ -37,11 +37,11 @@ class Model {
     for (let key in this.fieldMap) {
       obj[key] = {
         get() {
-          if (CONFIG.isDebug) console.warn(`getter: ${key}`);
+          if (APP.config.isDebug) console.warn(`getter: ${key}`);
           return this.fieldMap[key].value || this.fieldMap[key].defaultValue;
         },
         set(val) {
-          if (CONFIG.isDebug) console.warn(`setter: ${key}, ${val}`);
+          if (APP.config.isDebug) console.warn(`setter: ${key}, ${val}`);
           this.fieldMap[key].value = val;
         }
       }
@@ -134,7 +134,7 @@ class Model {
 
   _validateError(key, field) {
     let err = null,
-      errObj = Util.deepCopy(CONFIG.error_code.error_validation);
+      errObj = Util.deepCopy(APP.error_code.error_validation);
     if (typeof field == 'object') {
       let value = field.value !== undefined ? field.value : field.default;
       // 验证是否空值
@@ -191,7 +191,7 @@ class Model {
   //新增数据
   async create(data, times) {
     if (!data) throw error('create方法的参数data不能为空');
-    if (CONFIG.isDebug) console.warn('新增记录');
+    if (APP.config.isDebug) console.warn('新增记录');
     let hasId = false;
     if(Array.isArray(data)){
       hasId = !!data.find(item => item.id);
@@ -303,11 +303,11 @@ class Model {
         hasKey = false;
       }
       if (hasKey && !noCatch) {
-        if (CONFIG.isDebug) console.warn('已有count');
+        if (APP.config.isDebug) console.warn('已有count');
         let arr = await this.redis.listSlice(theKey, 0, 1);
         if (arr.length) count = arr[0];
       } else {
-        if (CONFIG.isDebug) console.warn('没有count');
+        if (APP.config.isDebug) console.warn('没有count');
         if (query.hasKey && !noCatch) {
           count = await this.redis.listCount(query.listKey);
         } else {
@@ -404,7 +404,7 @@ class Model {
         const result = await catchErr(this.getQuery(body, noCatch));
         if (result.data) {
           let query = result.data.select(!Util.isEmpty(this._options.select) ? this._options.select : []);
-          if (CONFIG.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
+          if (APP.config.isDebug) console.warn(`请求列表, ${query.hasKey ? '有' : '无'}listKey`);
           const docsResult = await catchErr(this.db.execute(query));
           if (docsResult.data) {
             let docs = docsResult.data;

@@ -26,10 +26,10 @@ class Mysql {
   }
   // 创建数据库连接池
   async connect() {
-    for(let dbName in CONFIG.mysql){
+    for(let dbName in APP.config.mysql){
       if(!global.pools[dbName]){
-        if(CONFIG.mysql[dbName]) {
-          let opts = CONFIG.mysql[dbName];
+        if(APP.config.mysql[dbName]) {
+          let opts = APP.config.mysql[dbName];
           opts.database = dbName;
           global.pools[dbName] = await mysql.createConnection(opts);
           console.log('Mysql connected Successfull');

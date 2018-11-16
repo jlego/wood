@@ -17,7 +17,7 @@ let Util = {
   },
   // 返回错误
   error(err) {
-    let result = JSON.parse(JSON.stringify(CONFIG.error_code.error));
+    let result = JSON.parse(JSON.stringify(APP.error_code.error));
     if (typeof err !== 'object') {
       if(typeof err == 'string') result.msg = err;
       result.error = err;
@@ -113,16 +113,16 @@ let Util = {
   respData(data, reqData){
     let status = 0,
       msg = '';
-    if (!data && data !== false) data = CONFIG.error_code.error_nodata;
+    if (!data && data !== false) data = APP.error_code.error_nodata;
     if (data.path && data.message && data.kind) { //返回错误
-      status = CONFIG.error_code.error_wrongdata.code;
-      msg = CONFIG.error_code.error_wrongdata.msg;
+      status = APP.error_code.error_wrongdata.code;
+      msg = APP.error_code.error_wrongdata.msg;
     } else if (data.name == 'ValidationError') {
-      status = CONFIG.error_code.error_validation.code;
-      msg = CONFIG.error_code.error_validation.msg;
+      status = APP.error_code.error_validation.code;
+      msg = APP.error_code.error_validation.msg;
     } else {
-      status = !data.code ? CONFIG.error_code.success.code : data.code;
-      msg = !data.msg ? CONFIG.error_code.success.msg : data.msg;
+      status = !data.code ? APP.error_code.success.code : data.code;
+      msg = !data.msg ? APP.error_code.success.msg : data.msg;
     }
     return {
       // seqno: reqData.seqno,
