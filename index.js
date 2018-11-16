@@ -19,17 +19,18 @@ const Query = require('./src/query');
 const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
-const Errorcode = require('./errorcode');
+const Errorcode = require('./src/errorcode');
+const plugin = require('./src/plugin');
 const { error, catchErr, isEmpty } = Util;
 const models = new Map();
 const controllers = new Map();
 const routers = new Map();
 
-class App{
-  constructor(){
+class App {
+  constructor() {
     this.config = config || {}
     this.error_code = Errorcode,  // 错误码
-    this.Fields = Fields;
+      this.Fields = Fields;
     this.Tcp = Tcp;
     this.Util = Util;
     this.error = error;
@@ -40,9 +41,9 @@ class App{
   }
   // 路由
   Router(controllerName) {
-    if(routers.has(controllerName)){
+    if (routers.has(controllerName)) {
       return routers.get(controllerName);
-    }else{
+    } else {
       let _router = routers.set(controllerName, new Router(controllerName));
       return _router;
     }
@@ -53,7 +54,7 @@ class App{
   }
   // 控制器
   Controller(modelName) {
-    if(modelName && controllers.has(modelName)){
+    if (modelName && controllers.has(modelName)) {
       return controllers.get(modelName);
     }
     return Controller;
@@ -63,13 +64,13 @@ class App{
     let nameArr = _tableName.split('.'),
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
-    if(tableName){
-      if(models.has(tableName)){
+    if (tableName) {
+      if (models.has(tableName)) {
         let _model = models.get(tableName);
         _model.resetData();
         return _model;
       }
-      if(tableName && fields){
+      if (tableName && fields) {
         let theModel = new Model({
           tableName,
           fields,
@@ -85,24 +86,24 @@ class App{
     return Model;
   }
   // 添加中间件
-  use(opts){
-    if(typeof opts === 'object'){
+  use(opts) {
+    if (typeof opts === 'object') {
       Object.assign(Middlewares, opts);
-    }else if(typeof opts === 'function'){
+    } else if (typeof opts === 'function') {
       Middlewares[opts.name] = opts;
     }
   }
   // 初始化应用
   init() {
-    const app = express();
-    if(!this.config.isDebug) app.set('env', 'production');
+    const app = this.express = express();
+    if (!this.config.isDebug) app.set('env', 'production');
     app.use(express.static('docs'));
     app.use(bodyParser.json());
 
     // 跨域
     if (this.config.crossDomain) {
       app.all('*',
-        function(req, res, next) {
+        function (req, res, next) {
           res.header("Access-Control-Allow-Origin", req.headers.origin);
           res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
           res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
@@ -122,11 +123,11 @@ class App{
         let nameArr = fileName.split('.'),
           moduleName = nameArr[0],
           fileExt = nameArr[1];
-        if(fileExt === 'js'){
+        if (fileExt === 'js') {
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
-          if(type === 'controller') {
+          if (type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-            if(!controllers.has(controllerName)){
+            if (!controllers.has(controllerName)) {
               theModule = typeof theModule === 'function' ? new theModule() : theModule;
               controllers.set(controllerName, theModule);
             }
@@ -139,13 +140,13 @@ class App{
     app.use('/', this.Router().getRouter());
 
     // 生成api文档
-    if(this.config.buildDocx){
+    if (this.config.buildDocx) {
       const Docx = require('./src/docx');
       app.use('/', this.Router().get(Docx.path, Docx.fun));
     }
 
     // 返回错误信息
-    app.use(function(err, req, res, next) {
+    app.use(function (err, req, res, next) {
       if (err) {
         res.status(err.status || 500);
         res.print(error(err));
@@ -154,7 +155,7 @@ class App{
       next();
     });
 
-    app.use(function(req, res, next) {
+    app.use(function (req, res, next) {
       res.status(404);
       res.print(this.error_code.error_noroute);
     });
@@ -164,10 +165,10 @@ class App{
     });
 
     // 监听服务端口
-    if(this.config.openHttpServer){
+    if (this.config.openHttpServer) {
       const httpServer = app.listen(
         this.config.service.http_server.listenport,
-        function() {
+        function () {
           let host = httpServer.address().address;
           let port = httpServer.address().port;
           console.log('http server running at http://' + host + ':' + port, 'homepath:', __dirname);
@@ -177,32 +178,33 @@ class App{
   }
   // 启动应用
   start(opts) {
-    if(opts) Object.assign(this.config, opts);
-    if(!isEmpty(this.config)){
+    if (opts) Object.assign(this.config, opts);
+    if (!isEmpty(this.config)) {
       // redis
-      if(this.config.redis) {
-        for(let key in this.config.redis){
+      if (this.config.redis) {
+        for (let key in this.config.redis) {
           Redis.connect(this.config.redis[key]);
         }
       }
       // mysql
-      if(this.config.mysql){
+      if (this.config.mysql) {
         new Mysql().connect().then(() => {
-          if(this.config.defaultDB === 'mysql') this.init();
+          if (this.config.defaultDB === 'mysql') this.init();
         });
       }
       // mongodb
-      if(this.config.mongodb){
-        for(let key in this.config.mongodb){
+      if (this.config.mongodb) {
+        for (let key in this.config.mongodb) {
           Mongo.connect(this.config.mongodb[key], key, (err, client) => {
-            if(this.config.defaultDB === 'mongodb' && key === 'master') this.init();
+            if (this.config.defaultDB === 'mongodb' && key === 'master') this.init();
           });
         }
       }
-    }else{
+    } else {
       console.error('系统配置不能为空!');
     }
   }
 };
 global.APP = global.CTX = new App();
+new plugin({ app: global.APP, express: global.express })
 module.exports = global.APP;
