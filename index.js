@@ -32,7 +32,7 @@ class App {
   constructor() {
     this.config = config || {}
     this.error_code = Errorcode,  // 错误码
-      this.Fields = Fields;
+    this.Fields = Fields;
     this.Tcp = Tcp;
     this.Util = Util;
     this.error = error;
@@ -42,17 +42,18 @@ class App {
     this.Redis = Redis;
     this.models = _models;
   }
-  Middleware(name, fun) {
-    if (!_middlewares.has(name) && fun) _middlewares.set(name, fun);
+  // 中间件
+  Middleware(name, fun){
+    if(!_middlewares.has(name) && fun) _middlewares.set(name, fun);
     return _middlewares.get(name);
   }
   // 路由
   Router(controllerName) {
-    if (_routers.has(controllerName)) {
+    if(_routers.has(controllerName)){
       return _routers.get(controllerName);
     } else {
       let _router = new Router(controllerName, _controllers);
-      if (controllerName) _routers.set(controllerName, _router);
+      if(controllerName) _routers.set(controllerName, _router);
       return _router;
     }
   }
@@ -62,7 +63,7 @@ class App {
   }
   // 控制器
   Controller(modelName) {
-    if (modelName && _controllers.has(modelName)) {
+    if(modelName && _controllers.has(modelName)){
       return _controllers.get(modelName);
     }
     return Controller;
@@ -72,8 +73,8 @@ class App {
     let nameArr = _tableName.split('.'),
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
-    if (tableName) {
-      if (_models.has(tableName)) {
+    if(tableName){
+      if(_models.has(tableName)){
         let _model = _models.get(tableName);
         _model.resetData();
         return _model;
@@ -134,7 +135,7 @@ class App {
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
           if (type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-            if (!_controllers.has(controllerName)) {
+            if(!_controllers.has(controllerName)){
               theModule = typeof theModule === 'function' ? new theModule({}, _models) : theModule;
               _controllers.set(controllerName, theModule);
             }
@@ -143,6 +144,12 @@ class App {
       });
     });
 
+    // 中间件
+    this.Middleware('responseFormat', Middlewares.responseFormat);
+    this.Middleware('requestBody', Middlewares.requestBody);
+    _middlewares.forEach((fun, key) => {
+      app.use(fun);
+    });
     // 加载路由
     app.use('/', this.Router().getRouter());
 
@@ -212,5 +219,4 @@ class App {
     }
   }
 };
-global.APP = global.CTX = new App();
-module.exports = global.APP;
+module.exports = global.APP = new App();

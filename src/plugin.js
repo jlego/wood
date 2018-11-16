@@ -1,13 +1,13 @@
 /*
- * @Author: Jc 
- * @Date: 2018-11-16 14:39:12 
+ * @Author: Jc
+ * @Date: 2018-11-16 14:39:12
  * @Last Modified by: Jc
- * @Last Modified time: 2018-11-16 17:57:43
+ * @Last Modified time: 2018-11-16 18:01:35
  * @Des: 插件功能类
  */
 
 const path = require('path'),
-    fs = require('fs');
+  fs = require('fs');
 
 function isDev() {
     return 'development' == process.env.NODE_ENV;
@@ -51,6 +51,7 @@ class Plugin {
             console.log('pluginMap：', pluginMap);
         return pluginMap;
     }
+  }
 
     _inspectEnvOpen(plugin) {
         return !("env" in plugin) || plugin.env == process.env.NODE_ENV;
