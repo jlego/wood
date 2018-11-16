@@ -116,10 +116,6 @@ class App {
       });
     }
 
-    // 内置中间件
-    app.use(this.Middleware('responseFormat', Middlewares.responseFormat));
-    app.use(this.Middleware('requestBody', Middlewares.requestBody));
-
     //设置插件
     this._plugins = new plugin(app).getPlugin();
 
