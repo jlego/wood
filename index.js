@@ -20,10 +20,7 @@ const Fields = require('./src/fields');
 const Modelsql = require('./src/modelsql');
 const Tcp = require('./src/tcp');
 const Errorcode = require('./src/errorcode');
-<<<<<<< HEAD
-const plugin = require('./src/plugin');
-=======
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
+const Plugin = require('./src/plugin');
 const { error, catchErr, isEmpty } = Util;
 const _models = new Map();
 const _controllers = new Map();
@@ -35,7 +32,7 @@ class App {
   constructor() {
     this.config = config || {}
     this.error_code = Errorcode,  // 错误码
-      this.Fields = Fields;
+    this.Fields = Fields;
     this.Tcp = Tcp;
     this.Util = Util;
     this.error = error;
@@ -52,18 +49,11 @@ class App {
   }
   // 路由
   Router(controllerName) {
-<<<<<<< HEAD
-    if (routers.has(controllerName)) {
-      return routers.get(controllerName);
-    } else {
-      let _router = routers.set(controllerName, new Router(controllerName));
-=======
     if(_routers.has(controllerName)){
       return _routers.get(controllerName);
     }else{
       let _router = new Router(controllerName, _controllers);
       if(controllerName) _routers.set(controllerName, _router);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
       return _router;
     }
   }
@@ -73,13 +63,8 @@ class App {
   }
   // 控制器
   Controller(modelName) {
-<<<<<<< HEAD
-    if (modelName && controllers.has(modelName)) {
-      return controllers.get(modelName);
-=======
     if(modelName && _controllers.has(modelName)){
       return _controllers.get(modelName);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
     }
     return Controller;
   }
@@ -88,15 +73,9 @@ class App {
     let nameArr = _tableName.split('.'),
       dbName = nameArr.length > 1 ? nameArr[0] : 'master',
       tableName = nameArr.length > 1 ? nameArr[1] : nameArr[0];
-<<<<<<< HEAD
-    if (tableName) {
-      if (models.has(tableName)) {
-        let _model = models.get(tableName);
-=======
     if(tableName){
       if(_models.has(tableName)){
         let _model = _models.get(tableName);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
         _model.resetData();
         return _model;
       }
@@ -115,17 +94,6 @@ class App {
     }
     return Model;
   }
-<<<<<<< HEAD
-  // 添加中间件
-  use(opts) {
-    if (typeof opts === 'object') {
-      Object.assign(Middlewares, opts);
-    } else if (typeof opts === 'function') {
-      Middlewares[opts.name] = opts;
-    }
-  }
-=======
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
   // 初始化应用
   init() {
     const app = this.express = express();
@@ -135,14 +103,8 @@ class App {
 
     // 跨域
     if (this.config.crossDomain) {
-<<<<<<< HEAD
-      app.all('*',
-        function (req, res, next) {
-          res.header("Access-Control-Allow-Origin", req.headers.origin);
-=======
       app.all('*', (req, res, next) => {
           res.header("Access-Control-Allow-Origin", this.config.crossDomain);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
           res.header("Access-Control-Allow-Headers", this.config.verifyLogin ? "Content-Type,token,secretkey" : "Content-Type");
           res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
           res.header("Access-Control-Allow-Credentials", true);
@@ -150,9 +112,6 @@ class App {
         });
     }
     
-    // 内置中间件
-    app.use(this.Middleware('responseFormat', Middlewares.responseFormat));
-    app.use(this.Middleware('requestBody', Middlewares.requestBody));
 
     // 加载模块
     ['model', 'controller', 'route'].forEach(type => {
@@ -166,21 +125,21 @@ class App {
           let theModule = require(path.resolve(__dirname, `${dirPath}/${moduleName}`));
           if (type === 'controller') {
             let controllerName = moduleName.replace('Controller', '');
-<<<<<<< HEAD
-            if (!controllers.has(controllerName)) {
-              theModule = typeof theModule === 'function' ? new theModule() : theModule;
-              controllers.set(controllerName, theModule);
-=======
             if(!_controllers.has(controllerName)){
               theModule = typeof theModule === 'function' ? new theModule({}, _models) : theModule;
               _controllers.set(controllerName, theModule);
->>>>>>> 66347e41f6a71d21ae526e84d698dfc675f5faeb
             }
           }
         }
       });
     });
 
+    // 中间件
+    this.Middleware('responseFormat', Middlewares.responseFormat);
+    this.Middleware('requestBody', Middlewares.requestBody);
+    for(let key of this.Middleware){
+      app.use(this.Middleware(key));
+    }
     // 加载路由
     app.use('/', this.Router().getRouter());
 
@@ -250,6 +209,6 @@ class App {
     }
   }
 };
-global.APP = global.CTX = new App();
+global.APP = new App();
 new plugin({ app: global.APP, express: global.express })
 module.exports = global.APP;
