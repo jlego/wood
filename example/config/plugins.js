@@ -115,9 +115,6 @@ exports.httpserver = {
   package: 'wood-httpserver',
   enable: true,
   config: {
-    cluster: {
-      cpus: 2,
-    },
     http: {
       port: 3004
     },
@@ -125,8 +122,5 @@ exports.httpserver = {
     //   port: 443,
     //   options: {}
     // },
-    initloop: {
-      workerid: 1
-    }
   }
 }

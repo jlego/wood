@@ -12,7 +12,9 @@
   "author": "yuronghui",
   "license": "ISC",
   "dependencies": {
+    "compression": "^1.7.3",
     "wood-apidocs": "^1.0.5",
+    "wood-cluster": "^1.0.3",
     "wood-controller": "^1.0.4",
     "wood-crossdomain": "^1.0.0",
     "wood-fields": "^1.0.1",

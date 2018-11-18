@@ -1,6 +1,6 @@
 {
   "name": "wood-node",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "nodejs api framework",
   "main": "index.js",
   "scripts": {
@@ -17,9 +17,7 @@
   "author": "legojs",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.3",
     "body-parser": "^1.18.2",
-    "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
     "wood-util": "^1.0.2"
   }
