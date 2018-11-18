@@ -24,7 +24,7 @@
     "wood-redis": "^1.0.4",
     "wood-requestbody": "^1.0.0",
     "wood-responseformat": "^1.0.1",
-    "wood-router": "^1.0.12",
+    "wood-router": "^1.0.13",
     "wood-tcp": "^1.0.0",
     "wood-token": "^1.0.0",
     "wood-util": "^1.0.5"

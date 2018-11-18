@@ -9,6 +9,7 @@ const Errorcode = require('./src/errorcode');
 const plugin = require('./src/plugin');
 const { error, catchErr, isEmpty } = Util;
 const _middlewares = new Set();
+let _plugins = null;
 
 class App {
   constructor() {
@@ -25,7 +26,7 @@ class App {
 
   // 插件
   Plugin(pluginName) {
-    return this._plugins ? this._plugins.get(pluginName) : {};
+    return _plugins ? _plugins.get(pluginName) : {};
   }
 
   // 初始化应用
@@ -36,7 +37,7 @@ class App {
     app.use(bodyParser.json());
 
     //加载插件
-    this._plugins = new plugin(this).getPlugin();
+    _plugins = new plugin(this).getPlugin();
 
     // 加载中间件
     _middlewares.forEach(fun => {
