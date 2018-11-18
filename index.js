@@ -1,5 +1,5 @@
 // wood-core
-// update by YuRonghui 2018-11-11
+// update by YuRonghui 2018-11-18
 const express = require('express');
 const bodyParser = require('body-parser');
 global.Promise = require("bluebird");
