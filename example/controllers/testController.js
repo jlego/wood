@@ -3,7 +3,6 @@ const {
   Model,
   error,
   catchErr,
-  Mongo,
   Query,
   Util
 } = require('../../index');
@@ -21,6 +20,7 @@ class TestController extends controller {
     }));
     res.print(result);
   }
+
   async list(req, res, next) {
     let body = Util.getParams(req),
         page = Number(body.data.page) || 1;

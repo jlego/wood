@@ -14,8 +14,8 @@
  * @apiParam {Number} data.page       当前页码
  */
 const { Router, Controller } = require('../../index');
-const multipart = require('connect-multiparty');
 const controller = Controller('test');
+const router = Router('test');
 
 /**
  * @api {put} /test/list 测试列表
@@ -37,9 +37,9 @@ const controller = Controller('test');
  *        }
  *     }
  */
-Router('test').put('/test/list', controller.list);
+router.put('/test/list', controller.list);
 
-Router('test').put('/test/detail', controller.detail);
+router.put('/test/detail', controller.detail);
 
 /**
  * @api {put} /test/create 新增测试配置
@@ -69,8 +69,8 @@ Router('test').put('/test/detail', controller.detail);
  *        }]
  *     }
  */
-Router('test').put('/test/create', controller.create);
+router.put('/test/create', controller.create);
 
-Router('test').put('/test/remove', controller.remove);
+router.put('/test/remove', controller.remove);
 
-module.exports = Router;
+module.exports = router;

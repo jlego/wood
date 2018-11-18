@@ -12,8 +12,21 @@
   "author": "yuronghui",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.3",
-    "mongodb": "^3.1.9",
-    "wood-requeststattime": "git+http://10.0.1.26:3000/jc/wood-requestStatTime.git"
+    "wood-apidocs": "^1.0.5",
+    "wood-controller": "^1.0.4",
+    "wood-crossdomain": "^1.0.0",
+    "wood-fields": "^1.0.1",
+    "wood-httpserver": "^1.0.4",
+    "wood-model": "^1.0.8",
+    "wood-module-loader": "^1.0.2",
+    "wood-mongo": "^1.0.8",
+    "wood-query": "^1.0.7",
+    "wood-redis": "^1.0.4",
+    "wood-requestbody": "^1.0.0",
+    "wood-responseformat": "^1.0.1",
+    "wood-router": "^1.0.12",
+    "wood-tcp": "^1.0.0",
+    "wood-token": "^1.0.0",
+    "wood-util": "^1.0.5"
   }
 }
