@@ -2,7 +2,7 @@
  * 配置项
  */
 // const mysql = require('./mysqlConfig');
-const plugins = require('./pluginConfig');
+const plugins = require('./plugins');
 
 module.exports = {
 	projectName: 'test_api',  //项目名
