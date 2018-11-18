@@ -2,7 +2,6 @@
 // update by YuRonghui 2018-11-18
 const express = require('express');
 const bodyParser = require('body-parser');
-const cluster = require('cluster');
 const config = require('./src/config');
 const Util = require('./src/util');
 const Errorcode = require('./src/errorcode');
@@ -54,27 +53,7 @@ class App {
     if (opts) Object.assign(this.config, opts);
     if (this.config.errorCode) Object.assign(this.error_code, this.config.errorCode);
     if (!isEmpty(this.config)) {
-      const cpuNums = this.config.cluster.cpus <= 0 ? require('os').cpus().length : this.config.cluster.cpus;
-      if(cpuNums > 1){
-        if (cluster.isMaster) {
-          for (let i = 0; i < cpuNums; i++) {
-            cluster.fork();
-          }
-          cluster.on('disconnect', (worker) => {
-            console.log(`The worker #${worker.id} has disconnected`);
-            worker.kill();
-          });
-          cluster.on('exit', (worker, code, signal) => {
-            console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
-            cluster.fork();
-          });
-        } else {
-          console.log('The slaver[' + cluster.worker.id + ']');
-          this.init();
-        }
-      }else{
-        this.init();
-      }
+      this.init();
     } else {
       console.error('系统配置不能为空!');
     }

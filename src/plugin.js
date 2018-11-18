@@ -17,15 +17,6 @@ class Plugin {
   constructor(context) {
     this.context = context;
   }
-  toPromise(val){
-    if(!(val instanceof Promise)){
-      return new Promise((resolve, reject) => {
-        resolve(val);
-      });
-    }else{
-      return val;
-    }
-  }
   async getPlugin(application) {
     this.context.application = application;
     const pluginConfig = this.context.config.plugins,

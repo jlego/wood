@@ -6,7 +6,6 @@
   "scripts": {
     "docs": "apidoc -i ./routes/ -o ./docs/ -t ./node_modules/wood-node/template/",
     "start": "node ./main.js",
-    "cluster": "node ./maincluster.js",
     "dev": "nodemon --inspect=9230 ./main.js"
   },
   "author": "yuronghui",
@@ -18,7 +17,7 @@
     "wood-controller": "^1.0.4",
     "wood-crossdomain": "^1.0.0",
     "wood-fields": "^1.0.1",
-    "wood-httpserver": "^1.0.4",
+    "wood-httpserver": "^1.0.5",
     "wood-model": "^1.0.8",
     "wood-module-loader": "^1.0.2",
     "wood-mongo": "^1.0.8",
