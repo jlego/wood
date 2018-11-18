@@ -13,6 +13,7 @@ const _middlewares = new Set();
 class App {
   constructor() {
     this.config = config || {}
+    this.express = express;
     this.error_code = Errorcode;  // 错误码
     this.error = error;
     this.catchErr = catchErr;
@@ -30,7 +31,6 @@ class App {
   // 初始化应用
   init() {
     const app = express();
-    this.express = express;
     this.application = app;
     if (!this.config.isDebug) app.set('env', 'production');
     app.use(bodyParser.json());
