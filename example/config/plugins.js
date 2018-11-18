@@ -115,6 +115,9 @@ exports.httpserver = {
   package: 'wood-httpserver',
   enable: true,
   config: {
+    cluster: {
+      cpus: 2
+    },
     http: {
       port: 3004
     },

@@ -12,10 +12,7 @@ module.exports = {
 	errorCode: {}, //错误码
 	plugins,
 	defaultDB: 'mongodb',
-	cluster: {
-    cpus: 2,
-    initloop: {
-      workerid: 1
-    }
+  cluster: {
+    cpus: 2
   }
 };

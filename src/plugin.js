@@ -17,6 +17,15 @@ class Plugin {
   constructor(context) {
     this.context = context;
   }
+  toPromise(val){
+    if(!(val instanceof Promise)){
+      return new Promise((resolve, reject) => {
+        resolve(val);
+      });
+    }else{
+      return val;
+    }
+  }
   async getPlugin(application) {
     this.context.application = application;
     const pluginConfig = this.context.config.plugins,
@@ -27,12 +36,10 @@ class Plugin {
           envOpen = this._inspectEnvOpen(plugin);
         if (plugin.enable && envOpen) {
           let pluginPackage = require(path.resolve('./node_modules/', plugin.package));
-          let pluginResult = typeof pluginPackage === "function" && pluginPackage(this.context, plugin.config);
-          if(pluginResult instanceof Promise){
-            let res = await catchErr(pluginResult);
+          if(typeof pluginPackage === 'function'){
+            let res = await catchErr(this.toPromise(pluginPackage(this.context, plugin.config)));
+            // console.warn('----------', field);
             if(res.data) pluginMap.set(field, res.data);
-          }else{
-            pluginMap.set(field, pluginResult);
           }
         } else {
           console.warn(`plugin：[${field}] is not enable or env incompatible current NODE_ENV`)

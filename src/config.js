@@ -12,9 +12,6 @@ module.exports = {
   plugins: {}, //插件
   defaultDB: 'mongodb', //默认数据库
   cluster: {
-    cpus: 1,
-    initloop: {
-      workerid: 1
-    }
+    cpus: 1
   }
 };
