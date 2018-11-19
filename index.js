@@ -15,7 +15,7 @@ const hasProps = [
   'error',
   'catchErr',
   'use',
-  'addProp',
+  'addAppProp',
   'Plugin',
   'init',
   'start',
@@ -37,7 +37,7 @@ class App {
   }
 
   // 添加内置属性
-  addProp(key, val, pluginName) {
+  addAppProp(key, val, pluginName) {
     if(!hasProps.includes(key)){
       if (_props.has(key)) {
         console.warn(`Plugin [${pluginName}] addProp [${key}] is exited`);
