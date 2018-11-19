@@ -1,21 +1,20 @@
 /**
- * Module requestStatTime.
+ * 工具库
  */
-// exports.requestStatTime = {
-//   package: 'wood-requestStatTime',
-//   enable: true,
-//   config: {}
-// }
 exports.util = {
   package: 'wood-util',
   enable: true
 }
-
+/**
+ * 查询条件对象
+ */
 exports.query = {
   package: 'wood-query',
   enable: true
 }
-
+/**
+ * redis
+ */
 exports.redis = {
   package: 'wood-redis',
   enable: true,
@@ -27,7 +26,9 @@ exports.redis = {
     }
   }
 }
-
+/**
+ * mongo
+ */
 exports.mongo = {
   package: 'wood-mongo',
   enable: true,
@@ -46,52 +47,74 @@ exports.mongo = {
     slave1: 'mongodb://127.0.0.1:27017/test',
   }
 }
-
+/**
+ * 跨域处理
+ */
 exports.crossdomain = {
   package: 'wood-crossdomain',
   enable: true
 }
+/**
+ * 输出结果格式化
+ */
 exports.responseformat = {
   package: 'wood-responseformat',
   enable: true
 }
+/**
+ * 请求数据体
+ */
 exports.requestbody = {
   package: 'wood-requestbody',
   enable: true
 }
-
+/**
+ * tcp
+ */
 exports.tcp = {
   package: 'wood-tcp',
   enable: true,
   config: {}
 }
-
+/**
+ * token
+ */
 exports.token = {
   package: 'wood-token',
   enable: true,
   config: {}
 }
-
+/**
+ * 数据字段
+ */
 exports.fields = {
   package: 'wood-fields',
   enable: true
 }
-
+/**
+ * 数据模型
+ */
 exports.model = {
   package: 'wood-model',
   enable: true
 }
-
+/**
+ * 控制器
+ */
 exports.controller = {
   package: 'wood-controller',
   enable: true
 }
-
+/**
+ * 路由
+ */
 exports.router = {
   package: 'wood-router',
   enable: true
 }
-
+/**
+ * 模块加载器
+ */
 exports.moduleloader = {
   package: 'wood-module-loader',
   enable: true,
@@ -102,13 +125,17 @@ exports.moduleloader = {
     controller: '../../controllers'
   }
 }
-
+/**
+ * 生成接口文档
+ */
 exports.apidocs = {
   package: 'wood-apidocs',
   enable: true,
   config: {}
 }
-
+/**
+ * http服务
+ */
 exports.httpserver = {
   package: 'wood-httpserver',
   enable: true,
