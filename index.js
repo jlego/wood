@@ -6,7 +6,6 @@ const config = require('./src/config');
 const Util = require('./src/util');
 const Errorcode = require('./src/errorcode');
 const plugin = require('./src/plugin');
-const { error, catchErr, isEmpty } = Util;
 const _middlewares = new Set();
 let _plugins = null;
 
@@ -51,8 +50,10 @@ class App {
   // 启动应用
   start(opts = {}) {
     if (opts) Object.assign(this.config, opts);
-    if (this.config.errorCode) Object.assign(this.error_code, this.config.errorCode);
-    if (!isEmpty(this.config)) {
+    if (this.config.errorCode) {
+      Object.assign(this.error_code, this.config.errorCode);
+    }
+    if (!Util.isEmpty(this.config)) {
       this.init();
     } else {
       console.error('系统配置不能为空!');
