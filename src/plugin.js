@@ -30,26 +30,6 @@ class Plugin {
     return !("env" in plugin) || plugin.env == process.env.NODE_ENV;
   }
 
-  _get_set() {
-    let obj = {}, that = this;
-    for (let [key, value]of _props.entries()) {
-      if(!['package','enable', 'config'].includes(key)){
-        obj[key] = {
-          get() {
-            console.warn(`getter: ${key}`);
-            return _props.get(key);
-          },
-          set(val) {
-            console.warn(`setter: ${key}, ${val}`);
-            if (typeof val === 'function') val = val.bind(that.ctx);
-            if (!_props.has(key)) _props.set(key, val);
-          }
-        }
-      }
-    }
-    return obj;
-  }
-
   async getPlugin(application) {
     const pluginConfig = this.ctx.config.plugins,
       pluginMap = new Map();
