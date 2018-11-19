@@ -60,13 +60,14 @@ class App {
   // 初始化应用
   async init() {
     const app = express();
+    this.application = app;
     if (!this.config.isDebug){
       app.set('env', 'production');
     }
     app.use(bodyParser.json());
 
     //加载插件
-    await Util.catchErr(new plugin(this).loader(app));
+    await Util.catchErr(new plugin(this).loader());
 
     // 加载中间件
     _middlewares.forEach(fun => {

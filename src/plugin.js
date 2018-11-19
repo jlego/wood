@@ -32,7 +32,7 @@ class Plugin {
     return !("env" in plugin) || plugin.env == process.env.NODE_ENV;
   }
 
-  async loader(application) {
+  async loader() {
     const pluginConfig = this.ctx.config.plugins;
     if (pluginConfig && Object.keys(pluginConfig).length > 0) {
       for (let field of Object.keys(pluginConfig)) {
@@ -54,7 +54,7 @@ class Plugin {
           if (typeof pluginPackage === 'function') {
             plugin.app = {
               name: field,
-              application: application,
+              application: this.ctx.application,
               config: this.ctx.config,
               error_code: this.ctx.error_code,
               express: this.ctx.express,
