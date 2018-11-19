@@ -40,7 +40,7 @@ class App {
   addAppProp(key, val, pluginName) {
     if(!hasProps.includes(key)){
       if (_props.has(key)) {
-        console.warn(`Plugin [${pluginName}] addProp [${key}] is exited`);
+        console.warn(`Plugin: [${pluginName}] -> addAppProp: [${key}] is exited`);
         return;
       }
       if (typeof val === 'function'){
