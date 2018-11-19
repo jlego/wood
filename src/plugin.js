@@ -10,7 +10,7 @@ const fs = require('fs');
 
 class Plugin {
   constructor(ctx) {
-    this.ctx = context;
+    this.ctx = ctx;
   }
   toPromise(val){
     if(!(val instanceof Promise)){

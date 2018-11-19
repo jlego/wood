@@ -34,7 +34,7 @@ class App {
     app.use(bodyParser.json());
 
     //加载插件
-    let result = await catchErr(new plugin(this).getPlugin(app));
+    let result = await Util.catchErr(new plugin(this).getPlugin(app));
     if(result.data) _plugins = result.data;
 
     // 加载中间件
