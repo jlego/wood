@@ -14,8 +14,8 @@ class App {
     this.config = config || {}
     this.express = express;
     this.error_code = Errorcode;  // 错误码
-    this.error = error;
-    this.catchErr = catchErr;
+    this.error = Util.error;
+    this.catchErr = Util.catchErr;
   }
   // 安装中间件
   use(fun){
