@@ -66,7 +66,7 @@ class App {
     app.use(bodyParser.json());
 
     //加载插件
-    await Util.catchErr(new plugin(this).getPlugin(app));
+    await Util.catchErr(new plugin(this).loader(app));
 
     // 加载中间件
     _middlewares.forEach(fun => {

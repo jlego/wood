@@ -32,7 +32,7 @@ class Plugin {
     return !("env" in plugin) || plugin.env == process.env.NODE_ENV;
   }
 
-  async getPlugin(application) {
+  async loader(application) {
     const pluginConfig = this.ctx.config.plugins;
     if (pluginConfig && Object.keys(pluginConfig).length > 0) {
       for (let field of Object.keys(pluginConfig)) {
