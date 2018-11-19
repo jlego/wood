@@ -18,7 +18,7 @@
     "wood-fields": "^1.0.1",
     "wood-httpserver": "^1.0.6",
     "wood-model": "^1.0.9",
-    "wood-module-loader": "^1.0.3",
+    "wood-module-loader": "^1.0.4",
     "wood-mongo": "^1.0.8",
     "wood-query": "^1.0.7",
     "wood-redis": "^1.0.4",

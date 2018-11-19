@@ -32,8 +32,8 @@ exports.mongo = {
   package: 'wood-mongo',
   enable: true,
   config: {
-    master: 'mongodb://127.0.0.1:27017/test',
-    // master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
+    // master: 'mongodb://127.0.0.1:27017/test',
+    master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
     // master: {
     //   dbName: 'test',
     //   host: ['10.0.1.26:51801','10.0.1.26:51802','10.0.1.26:51803','10.0.1.26:51804'],
@@ -97,11 +97,9 @@ exports.moduleloader = {
   enable: true,
   config: {
     //默认注册模块目录
-    registerDirs: {
-      route: '../../routes',
-      model: '../../models',
-      controller: '../../controllers'
-    }
+    route: '../../routes',
+    model: '../../models',
+    controller: '../../controllers'
   }
 }
 
