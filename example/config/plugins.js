@@ -27,6 +27,20 @@ exports.redis = {
   }
 }
 /**
+ * mysql
+ */
+// exports.mysql = {
+//   package: 'wood-mysql',
+//   enable: true,
+//   config: {
+//     master: {
+//       host: '127.0.0.1',
+//       user: 'root',
+//       password: '123456'
+//     }
+//   }
+// }
+/**
  * mongo
  */
 exports.mongo = {

@@ -1,7 +1,6 @@
 /**
  * 配置项
  */
-// const mysql = require('./mysqlConfig');
 const plugins = require('./plugins');
 
 module.exports = {
