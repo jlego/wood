@@ -18,11 +18,9 @@ exports.uuid = function() {
 
 // 深拷贝
 exports.deepCopy = function(obj){
-  let str, newobj = Array.isArray(obj) ? [] : {};
+  let newobj = Array.isArray(obj) ? [] : {};
   if(typeof obj !== 'object'){
     return;
-  // } else if(window.JSON){
-  //   newobj = JSON.parse(JSON.stringify(obj));
   } else {
     for(let i in obj){
       newobj[i] = typeof obj[i] === 'object' && !(obj[i] instanceof Date) ? exports.deepCopy(obj[i]) : obj[i];

@@ -1,25 +1,54 @@
-// wood-core
-// update by YuRonghui 2018-11-18
+// wood-core update by YuRonghui 2018-11-18
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./src/config');
 const Util = require('./src/util');
 const Errorcode = require('./src/errorcode');
 const plugin = require('./src/plugin');
+const _props = new Map();
 const _middlewares = new Set();
 let _plugins = null;
+const hasProps = [
+  'config',
+  'express',
+  'error_code',
+  'error',
+  'catchErr',
+  'use',
+  'addProp',
+  'Plugin',
+  'init',
+  'start',
+];
 
 class App {
   constructor() {
     this.config = config || {}
     this.express = express;
-    this.error_code = Errorcode;  // 错误码
+    this.error_code = Errorcode; // 错误码
     this.error = Util.error;
     this.catchErr = Util.catchErr;
   }
   // 安装中间件
-  use(fun){
-    if(!_middlewares.has(fun)) _middlewares.add(fun);
+  use(fun) {
+    if (!_middlewares.has(fun)) {
+      _middlewares.add(fun);
+    }
+  }
+
+  // 添加内置属性
+  addProp(key, val, pluginName) {
+    if(!hasProps.includes(key)){
+      if (_props.has(key)) {
+        console.warn(`Plugin [${pluginName}] addProp [${key}] is exited`);
+        return;
+      }
+      if (typeof val === 'function'){
+        val = val.bind(this);
+      }
+      _props.set(key, val);
+      this[key] = val;
+    }
   }
 
   // 插件
@@ -30,13 +59,17 @@ class App {
   // 初始化应用
   async init() {
     const app = express();
-    if (!this.config.isDebug) app.set('env', 'production');
+    if (!this.config.isDebug){
+      app.set('env', 'production');
+    }
     app.use(bodyParser.json());
 
     //加载插件
     let result = await Util.catchErr(new plugin(this).getPlugin(app));
-    if(result.data) _plugins = result.data;
-
+    if (result.data){
+      _plugins = result.data;
+    }
+    
     // 加载中间件
     _middlewares.forEach(fun => {
       app.use(fun);
@@ -49,7 +82,8 @@ class App {
   }
   // 启动应用
   start(opts = {}) {
-    if (opts) Object.assign(this.config, opts);
+    if (opts) 
+      Object.assign(this.config, opts);
     if (this.config.errorCode) {
       Object.assign(this.error_code, this.config.errorCode);
     }
