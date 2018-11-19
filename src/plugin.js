@@ -4,12 +4,14 @@
  * @Last Modified by: jlego 2018-11-18
  * @Des: 插件功能类
  */
-const { catchErr } = require('wood-util')();
+const { Util } = require('wood-util')();
 const path = require('path');
+const pluginMap = new Map();
 
 class Plugin {
   constructor(ctx) {
     this.ctx = ctx;
+    this.ctx._plugins = pluginMap;
   }
 
   toPromise(val) {
@@ -31,8 +33,7 @@ class Plugin {
   }
 
   async getPlugin(application) {
-    const pluginConfig = this.ctx.config.plugins,
-      pluginMap = new Map();
+    const pluginConfig = this.ctx.config.plugins;
     if (pluginConfig && Object.keys(pluginConfig).length > 0) {
       for (let field of Object.keys(pluginConfig)) {
         let plugin = pluginConfig[field],
@@ -51,14 +52,19 @@ class Plugin {
             console.log(error);
           };
           if (typeof pluginPackage === 'function') {
-            Object.create(plugin, {
+            plugin.app = {
+              name: field,
+              application: application,
+              config: this.ctx.config,
+              error_code: this.ctx.error_code,
+              express: this.ctx.express,
+              error: this.ctx.error,
+              catchErr: this.ctx.catchErr,
               use: this.ctx.use.bind(this.ctx),
               Plugin: this.ctx.Plugin.bind(this.ctx),
-              addProp: this.ctx.addProp.bind(this.ctx),
-              application: application
-            });
-            let res = await catchErr(this.toPromise(pluginPackage(plugin)));
-            // console.warn('----------', field);
+              addAppProp: this.ctx.addAppProp.bind(this.ctx, field)
+            };
+            let res = await Util.catchErr(this.toPromise(pluginPackage(plugin.app, plugin.config)));
             if (res.data) pluginMap.set(field, res.data);
           }
         } else {
@@ -67,7 +73,6 @@ class Plugin {
       }
     }
     if (this.isDev()) console.log('pluginMap：', pluginMap);
-    return pluginMap;
   }
 }
 

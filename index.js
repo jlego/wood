@@ -7,7 +7,6 @@ const Errorcode = require('./src/errorcode');
 const plugin = require('./src/plugin');
 const _props = new Map();
 const _middlewares = new Set();
-let _plugins = null;
 const hasProps = [
   'config',
   'express',
@@ -17,6 +16,7 @@ const hasProps = [
   'use',
   'addAppProp',
   'Plugin',
+  '_plugins',
   'init',
   'start',
 ];
@@ -24,11 +24,12 @@ const hasProps = [
 class App {
   constructor() {
     this.config = config || {}
-    this.express = express;
     this.error_code = Errorcode; // 错误码
+    this.express = express;
     this.error = Util.error;
     this.catchErr = Util.catchErr;
   }
+
   // 安装中间件
   use(fun) {
     if (!_middlewares.has(fun)) {
@@ -37,23 +38,23 @@ class App {
   }
 
   // 添加内置属性
-  addAppProp(key, val, pluginName) {
+  addAppProp(pluginName, key, val) {
     if(!hasProps.includes(key)){
       if (_props.has(key)) {
-        console.warn(`Plugin: [${pluginName}] -> addAppProp: [${key}] is exited`);
+        console.warn(`[plugin:${pluginName}] -> [prop:${key}] is used in [${_props.get(key)}]`);
         return;
       }
       if (typeof val === 'function'){
         val = val.bind(this);
       }
-      _props.set(key, val);
+      _props.set(key, pluginName);
       this[key] = val;
     }
   }
 
   // 插件
   Plugin(pluginName) {
-    return _plugins ? _plugins.get(pluginName) : {};
+    return this._plugins ? this._plugins.get(pluginName) : {};
   }
 
   // 初始化应用
@@ -65,11 +66,8 @@ class App {
     app.use(bodyParser.json());
 
     //加载插件
-    let result = await Util.catchErr(new plugin(this).getPlugin(app));
-    if (result.data){
-      _plugins = result.data;
-    }
-    
+    await Util.catchErr(new plugin(this).getPlugin(app));
+
     // 加载中间件
     _middlewares.forEach(fun => {
       app.use(fun);
@@ -80,18 +78,16 @@ class App {
       console.log('Caught exception: ', err);
     });
   }
+
   // 启动应用
   start(opts = {}) {
-    if (opts) 
+    if (opts){
       Object.assign(this.config, opts);
+    }
     if (this.config.errorCode) {
       Object.assign(this.error_code, this.config.errorCode);
     }
-    if (!Util.isEmpty(this.config)) {
-      this.init();
-    } else {
-      console.error('系统配置不能为空!');
-    }
+    this.init();
   }
 };
 module.exports = global.WOOD = new App();
