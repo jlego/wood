@@ -51,8 +51,8 @@ exports.mongoconnect = {
   package: 'wood-mongo/connect',
   enable: true,
   config: {
-    // master: 'mongodb://127.0.0.1:27017/test',
-    master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
+    master: 'mongodb://127.0.0.1:27017/test',
+    // master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
     // master: {
     //   dbName: 'test',
     //   host: ['10.0.1.26:51801','10.0.1.26:51802','10.0.1.26:51803','10.0.1.26:51804'],
