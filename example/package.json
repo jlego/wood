@@ -13,11 +13,11 @@
   "dependencies": {
     "compression": "^1.7.3",
     "wood-apidocs": "^1.0.6",
-    "wood-controller": "^1.0.5",
+    "wood-controller": "^1.0.7",
     "wood-crossdomain": "^1.0.3",
     "wood-fields": "^1.0.2",
     "wood-httpserver": "^1.0.7",
-    "wood-model": "^1.0.11",
+    "wood-model": "^1.0.12",
     "wood-module-loader": "^1.0.6",
     "wood-mongo": "^1.0.10",
     "wood-query": "^1.0.8",
