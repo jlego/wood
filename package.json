@@ -19,6 +19,6 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
-    "wood-util": "^1.0.2"
+    "wood-util": "^1.0.6"
   }
 }
