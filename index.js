@@ -42,7 +42,9 @@ class App {
   addAppProp(pluginName, key, val) {
     if(!hasProps.includes(key)){
       if (_props.has(key)) {
-        console.warn(`[plugin:${pluginName}] -> [prop:${key}] is used in [${_props.get(key)}]`);
+        if(this.config.isDebug) {
+          console.warn(`[plugin:${pluginName}] -> [prop:${key}] is used in [${_props.get(key)}]`);
+        }
         return;
       }
       if (typeof val === 'function'){
