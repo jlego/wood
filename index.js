@@ -28,6 +28,7 @@ class App {
     this.express = express;
     this.error = Util.error;
     this.catchErr = Util.catchErr;
+    this._plugins = null;
   }
 
   // 安装中间件
