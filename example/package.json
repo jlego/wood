@@ -13,22 +13,22 @@
   "dependencies": {
     "compression": "^1.7.3",
     "wood-apidocs": "^1.0.6",
-    "wood-controller": "^1.0.7",
+    "wood-controller": "^1.0.8",
     "wood-crossdomain": "^1.0.3",
     "wood-fields": "^1.0.2",
     "wood-httpserver": "^1.0.7",
-    "wood-model": "^1.0.12",
+    "wood-model": "^1.0.14",
     "wood-module-loader": "^1.0.6",
-    "wood-mongo": "^1.0.10",
-    "wood-query": "^1.0.8",
+    "wood-mongo": "^1.0.12",
+    "wood-query": "^1.0.11",
     "wood-queue": "^1.0.0",
     "wood-redis": "^1.0.5",
     "wood-requestbody": "^1.0.1",
     "wood-responseformat": "^1.0.2",
-    "wood-router": "^1.0.14",
+    "wood-router": "^1.0.15",
     "wood-tcp": "^1.0.1",
     "wood-token": "^1.0.1",
-    "wood-util": "^1.0.6"
+    "wood-util": "^1.0.7"
   },
   "devDependencies": {
     "cross-env": "^5.2.0"
