@@ -1,7 +1,7 @@
 // by YuRonghui 2018-10-19
 const {Model, Fields, error} = require('../../index');
 
-let UserModel = Model({
+module.exports = Model({
   tableName: 'master.users', 
   primarykey: 'rowid',
   fields: new Fields({
@@ -111,5 +111,3 @@ let UserModel = Model({
     },
   })
 });
-
-module.exports = UserModel;

@@ -5,7 +5,7 @@ const {
   error
 } = require('../../index');
 
-let TestModel = Model({
+module.exports = Model({
   tableName: 'master.tests', 
   select: {},
   primarykey: 'rowid',
@@ -45,5 +45,3 @@ let TestModel = Model({
     }
   })
 });
-
-module.exports = TestModel;
