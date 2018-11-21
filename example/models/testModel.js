@@ -5,11 +5,7 @@ const {
   error
 } = require('../../index');
 
-module.exports = Model({
-  tableName: 'master.tests', 
-  select: {},
-  primarykey: 'rowid',
-  fields: new Fields({
+module.exports = Model('master.tests', new Fields({
     "rowid": {
       type: 'Number',
       required: true,
@@ -43,5 +39,5 @@ module.exports = Model({
       type: 'Number',
       value: 1
     }
-  })
-});
+  }),
+);

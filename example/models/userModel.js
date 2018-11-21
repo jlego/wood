@@ -1,10 +1,7 @@
 // by YuRonghui 2018-10-19
 const {Model, Fields, error} = require('../../index');
 
-module.exports = Model({
-  tableName: 'master.users', 
-  primarykey: 'rowid',
-  fields: new Fields({
+module.exports = Model('master.users', new Fields({
     "uid": {
       type: 'Number',
       required: true,
@@ -109,5 +106,7 @@ module.exports = Model({
     "platformId": {
       type: 'String'
     },
-  })
-});
+  }),
+  {},  //select
+  'rowid' //primarykey
+);
