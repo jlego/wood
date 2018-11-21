@@ -40,7 +40,8 @@ class TestController extends controller {
   }
 
   async detail(req, res, next) {
-    let query = Query(req).select({subdata: 0});
+    let body = Util.getParams(req);
+    let query = Query(body.data).select({subdata: 0});
     const result = await catchErr(Model('tests').findOne(query));
     res.print(result);
   }
