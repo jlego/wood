@@ -43,7 +43,8 @@
 模型(/models/userModel.js)
 
     const { Model, Util, Fields } = require('wood-node'); //注：mysql时请使用Modelsql
-    module.exports = Model('users', new Fields({
+    module.exports = Model('master.users', 
+      new Fields({
         "rowid": { //行Id
           type: 'Number',
           required: true, //是否验证
@@ -51,9 +52,12 @@
         },
         "machineName": String,
         "status": Number
-      }), {
+      }), 
+      {
         "_id": 0,  //0为不返回的字段
-      });
+      }, 
+      'rowid' //primarykey主键
+    );
 
 控制器(/controllers/userController.js)
 
