@@ -17,7 +17,7 @@
     "wood-crossdomain": "^1.0.3",
     "wood-fields": "^1.0.2",
     "wood-httpserver": "^1.0.7",
-    "wood-model": "^1.0.15",
+    "wood-model": "^1.0.17",
     "wood-module-loader": "^1.0.6",
     "wood-mongo": "^1.0.14",
     "wood-query": "^1.0.11",

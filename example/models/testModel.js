@@ -5,40 +5,45 @@ const {
   error
 } = require('../../index');
 
-let TestModel = Model('master.tests', new Fields({
-  "rowid": {
-    type: 'Number',
-    required: true,
-    index: true
-  },
-  "title": String,
-  "options": Array,
-  "creator": new Fields({
-    "uid": String,
-    "name": String
-  }),
-  "subData": [
-    new Fields({
-      "key": {
-        type: 'String',
-        required: true
-      },
-      "value": {
-        type: 'String',
-        validator(val) {
-          console.warn('======', val);
-          // return '字段不正确';
-          return false;
+let TestModel = Model({
+  tableName: 'master.tests', 
+  select: {},
+  primarykey: 'rowid',
+  fields: new Fields({
+    "rowid": {
+      type: 'Number',
+      required: true,
+      index: true
+    },
+    "title": String,
+    "options": Array,
+    "creator": new Fields({
+      "uid": String,
+      "name": String
+    }),
+    "subData": [
+      new Fields({
+        "key": {
+          type: 'String',
+          required: true
+        },
+        "value": {
+          type: 'String',
+          validator(val) {
+            console.warn('======', val);
+            // return '字段不正确';
+            return false;
+          }
         }
-      }
-    })
-  ],
-  "createTime": Date,
-  "updateTime": Date,
-  "status": {
-    type: 'Number',
-    value: 1
-  }
-}));
+      })
+    ],
+    "createTime": Date,
+    "updateTime": Date,
+    "status": {
+      type: 'Number',
+      value: 1
+    }
+  })
+});
 
 module.exports = TestModel;
