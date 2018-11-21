@@ -6,7 +6,7 @@
   "scripts": {
     "docs": "apidoc -i ./routes/ -o ./docs/ -t ./node_modules/wood-node/template/",
     "start": "node ./main.js",
-    "dev": "nodemon --inspect=9230 ./main.js"
+    "dev": "cross-env NODE_ENV=development nodemon --inspect=9230 ./main.js"
   },
   "author": "yuronghui",
   "license": "ISC",
@@ -21,13 +21,16 @@
     "wood-module-loader": "^1.0.6",
     "wood-mongo": "^1.0.14",
     "wood-query": "^1.0.11",
-    "wood-queue": "^1.0.0",
+    "wood-queue": "^1.0.2",
     "wood-redis": "^1.0.5",
     "wood-requestbody": "^1.0.1",
     "wood-responseformat": "^1.0.2",
-    "wood-router": "^1.0.15",
+    "wood-router": "^1.0.16",
     "wood-tcp": "^1.0.1",
-    "wood-token": "^1.0.1",
+    "wood-token": "^1.0.2",
     "wood-util": "^1.0.7"
+  },
+  "devDependencies": {
+    "cross-env": "^5.2.0"
   }
 }

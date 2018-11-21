@@ -4,7 +4,7 @@
  * @Last Modified by: jlego 2018-11-18
  * @Des: 插件功能类
  */
-const { Util } = require('wood-util')();
+const Util = require('../src/util');
 const path = require('path');
 const pluginMap = new Map();
 
@@ -38,16 +38,24 @@ class Plugin {
       for (let field of Object.keys(pluginConfig)) {
         let plugin = pluginConfig[field],
           envOpen = this._inspectEnvOpen(plugin);
-        if(pluginMap.has(field)){
+        if (pluginMap.has(field)) {
           console.warn(`plugin：[${field}] is existed`);
           continue;
         }
         if (plugin.enable && envOpen) {
           let pluginPackage = null;
           try {
-            let dirname = path.dirname(require.main.filename);
-            let pluginpath = path.resolve(dirname, './node_modules/', plugin.package);
-            pluginPackage = require(pluginpath);
+            if ("package" in plugin) {
+              let dirname = path.dirname(require.main.filename);
+              let pluginpath = path.resolve(dirname, './node_modules/', plugin.package);
+              pluginPackage = require(pluginpath);
+            }
+            else if ("path" in plugin) {
+              pluginPackage = require(plugin.path);
+            }
+            else {
+              throw `current plugin [${field}] no field 'package' or 'path'`;
+            }
           } catch (error) {
             console.log(error);
           };
@@ -72,7 +80,7 @@ class Plugin {
         }
       }
     }
-    if (this.isDev()) console.log('pluginMap：', pluginMap);
+    if (this.isDev()) console.log('pluginMap：', pluginMap.keys());
   }
 }
 
