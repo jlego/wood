@@ -1,7 +1,7 @@
 // by YuRonghui 2018-10-19
 const {Model, Fields, error} = require('../../index');
 
-module.exports = Model('master.users', new Fields({
+let UserModel = Model('master.users', new Fields({
     "uid": {
       type: 'Number',
       required: true,
@@ -11,7 +11,7 @@ module.exports = Model('master.users', new Fields({
     "username": {
       type: 'String',
       required: true,
-      index: true
+      // index: true
     },
     //密码
     "password": {
@@ -20,7 +20,7 @@ module.exports = Model('master.users', new Fields({
     },
     //昵称
     "nickname": {
-      type: 'String',
+      type: 'String'
     },
     //头像
     "avatar": {
@@ -41,6 +41,7 @@ module.exports = Model('master.users', new Fields({
     //职业
     "profession": {
       type: 'String',
+      // index: 'text'
     },
     // 爱好
     "hobby": {
@@ -56,7 +57,7 @@ module.exports = Model('master.users', new Fields({
     },
     // 地址
     "address": {
-      type: 'String',
+      type: 'String'
     },
     // 绑定手机
     "telephone": {
@@ -107,6 +108,11 @@ module.exports = Model('master.users', new Fields({
       type: 'String'
     },
   }),
-  {},  //select
+  {
+    _id: 0
+  },  //select
   'rowid' //primarykey
 );
+// UserModel.removeIndex('username_1');
+
+module.exports = UserModel;

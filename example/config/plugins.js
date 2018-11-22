@@ -167,3 +167,14 @@ exports.httpserver = {
     // },
   }
 }
+
+/**
+ * 用户角色权限
+ */
+// exports.userrole = {
+//   package: 'wood-userrole',
+//   enable: true,
+//   config: {
+//     redis: 'master'
+//   }
+// }

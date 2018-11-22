@@ -19,7 +19,7 @@
     "wood-httpserver": "^1.0.7",
     "wood-model": "^1.0.19",
     "wood-module-loader": "^1.0.6",
-    "wood-mongo": "^1.0.14",
+    "wood-mongo": "^1.0.17",
     "wood-query": "^1.0.11",
     "wood-queue": "^1.0.2",
     "wood-redis": "^1.0.5",
