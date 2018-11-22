@@ -18,6 +18,10 @@ exports.query = {
 exports.redis = {
   package: 'wood-redis',
   enable: true,
+}
+exports.redisconnect = {
+  package: 'wood-redis/connect',
+  enable: true,
   config: {
     master: {
       port: 6379,
