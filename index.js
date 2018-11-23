@@ -69,13 +69,13 @@ class App {
     }
     app.use(bodyParser.json());
 
-    //加载插件
-    await Util.catchErr(new plugin(this).loader());
-
     // 加载中间件
     _middlewares.forEach(fun => {
       app.use(fun);
     });
+    
+    //加载插件
+    await Util.catchErr(new plugin(this).loader());
 
     // 拦截其他异常
     process.on('uncaughtException', function (err) {
