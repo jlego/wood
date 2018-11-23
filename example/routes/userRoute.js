@@ -8,4 +8,6 @@ router.put('/user/detail', controller.detail);
 // 添加用户
 router.put('/user/add', controller.add);
 
+router.put('/user/search', controller.search);
+
 module.exports = router;

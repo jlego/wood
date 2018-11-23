@@ -18,6 +18,10 @@ exports.query = {
 exports.redis = {
   package: 'wood-redis',
   enable: true,
+}
+exports.redisconnect = {
+  package: 'wood-redis/connect',
+  enable: true,
   config: {
     master: {
       port: 6379,
@@ -63,6 +67,16 @@ exports.mongoconnect = {
     //   readPreference: 'secondaryPreferred'
     // },
     slave1: 'mongodb://127.0.0.1:27017/test',
+  }
+}
+/**
+ * elasticsearch
+ */
+exports.elasticsearch = {
+  package: 'wood-elasticsearch',
+  enable: true,
+  config: {
+    host: '10.0.1.26:9200',
   }
 }
 /**
@@ -167,3 +181,14 @@ exports.httpserver = {
     // },
   }
 }
+
+/**
+ * 用户角色权限
+ */
+// exports.userrole = {
+//   package: 'wood-userrole',
+//   enable: true,
+//   config: {
+//     redis: 'master'
+//   }
+// }

@@ -29,6 +29,25 @@ class UserController extends controller {
       res.print(result);
     }
   }
+
+  // 全文搜索
+  async search(req, res, next) {
+    let params = Util.getParams(req);
+    let {page = 1, limit = 20, ...query} = params.data;
+    let ECsearch = WOOD.Plugin('elasticsearch');
+    if(ECsearch){
+      let result = await Util.catchErr(ECsearch.Search({
+        index: 'test', //数据库名
+        type: 'users',  //表名
+        limit, 
+        page, 
+        query
+      }));
+      res.print(result);
+    }else{
+      res.print(Util.error('搜索出错了'));
+    }
+  }
 }
 
 module.exports = new UserController({

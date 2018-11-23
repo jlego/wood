@@ -10,7 +10,6 @@ const controller = Controller();
 
 class TestController extends controller {
   async create(req, res, next) {
-    let query = Query(req).select({ _id: 0, options: 0 });
     const result = await catchErr(Model('tests').create({
       title: '小明',
       subData: [{
@@ -24,8 +23,9 @@ class TestController extends controller {
   async list(req, res, next) {
     let body = Util.getParams(req),
         page = Number(body.data.page) || 1;
-    let query = Query(req).limit(3).select({subData: 0});
-    const result = await catchErr(Model('tests').findList(query));
+    let query = Query().limit(3).select({subData: 0});
+    let cacheKey = await Util.getReqKey(req);
+    const result = await catchErr(Model('tests').findList(query, cacheKey));
     if(result.err){
       res.print(result);
     }else{
@@ -40,7 +40,8 @@ class TestController extends controller {
   }
 
   async detail(req, res, next) {
-    let query = Query(req).select({subdata: 0});
+    let body = Util.getParams(req);
+    let query = Query(body.data).select({subdata: 0});
     const result = await catchErr(Model('tests').findOne(query));
     res.print(result);
   }
