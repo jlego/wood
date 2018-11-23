@@ -15,7 +15,7 @@
     "wood-apidocs": "^1.0.6",
     "wood-controller": "^1.0.8",
     "wood-crossdomain": "^1.0.3",
-    "wood-elasticsearch": "^1.0.1",
+    "wood-elasticsearch": "^1.0.2",
     "wood-fields": "^1.0.2",
     "wood-httpserver": "^1.0.7",
     "wood-model": "^1.0.19",
