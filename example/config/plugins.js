@@ -70,6 +70,16 @@ exports.mongoconnect = {
   }
 }
 /**
+ * elasticsearch
+ */
+exports.elasticsearch = {
+  package: 'wood-elasticsearch',
+  enable: true,
+  config: {
+    host: '10.0.1.26:9200',
+  }
+}
+/**
  * 跨域处理
  */
 exports.crossdomain = {

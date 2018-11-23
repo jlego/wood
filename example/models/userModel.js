@@ -5,7 +5,7 @@ let UserModel = Model('master.users', new Fields({
     "uid": {
       type: 'Number',
       required: true,
-      index: true
+      // index: true
     },
     //注册名(唯一)
     "username": {
@@ -113,6 +113,6 @@ let UserModel = Model('master.users', new Fields({
   },  //select
   'rowid' //primarykey
 );
-// UserModel.removeIndex('username_1');
+// UserModel.removeIndex('uid_1');
 
 module.exports = UserModel;
