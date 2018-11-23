@@ -70,7 +70,7 @@ exports.mongoconnect = {
   }
 }
 /**
- * elasticsearch
+ * elasticsearch全文搜索
  */
 exports.elasticsearch = {
   package: 'wood-elasticsearch',

@@ -33,7 +33,7 @@ class UserController extends controller {
   // 全文搜索
   async search(req, res, next) {
     let params = Util.getParams(req);
-    let {page = 1, limit = 20, ...query} = params.data;
+    let {page = 1, limit = 20, ...query} = params.data || {};
     let ECsearch = WOOD.Plugin('elasticsearch');
     if(ECsearch){
       let result = await Util.catchErr(ECsearch.Search({
