@@ -16,7 +16,7 @@
     "wood-controller": "^1.0.10",
     "wood-crossdomain": "^1.0.3",
     "wood-elasticsearch": "^1.0.3",
-    "wood-fields": "^1.0.2",
+    "wood-fields": "^1.0.5",
     "wood-httpserver": "^1.0.8",
     "wood-model": "^1.0.20",
     "wood-module-loader": "^1.0.8",
