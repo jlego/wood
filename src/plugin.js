@@ -65,7 +65,7 @@ class Plugin {
               error: this.ctx.error,
               catchErr: this.ctx.catchErr,
               use: this.ctx.use.bind(this.ctx),
-              getPlugin: this.ctx.getPlugin.bind(this.ctx),
+              Plugin: this.ctx.Plugin.bind(this.ctx),
               addAppProp: this.ctx.addAppProp.bind(this.ctx, field)
             };
             let res = await this.ctx.catchErr(this.toPromise(pluginPackage(plugin.app, plugin.config)));
