@@ -1,6 +1,6 @@
 {
   "name": "wood-node",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "nodejs api framework",
   "main": "index.js",
   "scripts": {

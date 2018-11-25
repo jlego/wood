@@ -48,7 +48,7 @@ class App {
       'catchErr',
       'use',
       'addAppProp',
-      'getPlugin',
+      'Plugin',
       'start',
     ];
     if(!hasProps.includes(key)){
@@ -65,7 +65,7 @@ class App {
   }
 
   // 插件
-  getPlugin(pluginName) {
+  Plugin(pluginName) {
     return _plugins.get(pluginName);
   }
 
