@@ -1,7 +1,7 @@
 const {
   Controller,
   Model,
-  getPlugin,
+  Plugin,
   error,
   catchErr,
   Query,
@@ -35,7 +35,7 @@ class UserController extends controller {
   async search(req, res, next) {
     let params = Util.getParams(req);
     let {page = 1, limit = 20, ...query} = params.data || {};
-    let ECsearch = getPlugin('elasticsearch');
+    let ECsearch = Plugin('elasticsearch');
     if(ECsearch){
       let result = await catchErr(ECsearch.Search({
         index: 'test', //数据库名
