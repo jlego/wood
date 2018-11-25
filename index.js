@@ -97,7 +97,7 @@ class App {
   // 启动应用
   async start(opts = {}) {
     Object.assign(this.config, opts);
-    Object.assign(this.config.errorCode, opts.errorCode || {});
+    Object.assign(this.config.errorCode, _errorCode, opts.errorCode || {});
     const app = express();
     this.application = app;
     app.set('env', this.config.env);
