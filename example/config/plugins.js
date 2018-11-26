@@ -157,9 +157,9 @@ exports.moduleloader = {
     controller: '../../controllers'
   }
 }
-/**
- * 生成接口文档
- */
+// /**
+//  * 生成接口文档
+//  */
 exports.apidocs = {
   package: 'wood-apidocs',
   enable: true,
@@ -192,10 +192,10 @@ exports.httpserver = {
 /**
  * 用户角色权限
  */
-exports.userrole = {
-  package: 'wood-userrole',
-  enable: true,
-  config: {
-    redis: 'master'
-  }
-}
+// exports.userrole = {
+//   package: 'wood-userrole',
+//   enable: true,
+//   config: {
+//     redis: 'master'
+//   }
+// }

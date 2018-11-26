@@ -113,4 +113,4 @@ class App {
   }
 };
 
-module.exports = global.WOOD = new App();
+module.exports = new App();
