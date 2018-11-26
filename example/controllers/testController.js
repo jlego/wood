@@ -35,8 +35,6 @@ class TestController extends controller {
         page: page
       });
     }
-    // const result = await catchErr(new Mongo('tests').find(body.data));
-    // res.print(result);
   }
 
   async detail(req, res, next) {

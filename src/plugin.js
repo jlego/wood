@@ -4,21 +4,18 @@
  * @Last Modified by: jlego 2018-11-18
  * @Des: 插件功能类
  */
-const Util = require('../src/util');
+const express = require('express');
 const path = require('path');
-const pluginMap = new Map();
 
 class Plugin {
-  constructor(ctx) {
+  constructor(ctx, _plugins) {
     this.ctx = ctx;
-    this.ctx._plugins = pluginMap;
+    this._plugins = _plugins;
   }
 
   toPromise(val) {
     if (!(val instanceof Promise)) {
-      return new Promise((resolve, reject) => {
-        resolve(val);
-      });
+      return Promise.resolve(val);
     } else {
       return val;
     }
@@ -38,7 +35,7 @@ class Plugin {
       for (let field of Object.keys(pluginConfig)) {
         let plugin = pluginConfig[field],
           envOpen = this._inspectEnvOpen(plugin);
-        if (pluginMap.has(field)) {
+        if (this._plugins.has(field)) {
           console.warn(`plugin：[${field}] is existed`);
           continue;
         }
@@ -64,23 +61,22 @@ class Plugin {
               name: field,
               application: this.ctx.application,
               config: this.ctx.config,
-              error_code: this.ctx.error_code,
-              express: this.ctx.express,
+              express,
               error: this.ctx.error,
               catchErr: this.ctx.catchErr,
               use: this.ctx.use.bind(this.ctx),
               Plugin: this.ctx.Plugin.bind(this.ctx),
               addAppProp: this.ctx.addAppProp.bind(this.ctx, field)
             };
-            let res = await Util.catchErr(this.toPromise(pluginPackage(plugin.app, plugin.config)));
-            if (res.data) pluginMap.set(field, res.data);
+            let res = await this.ctx.catchErr(this.toPromise(pluginPackage(plugin.app, plugin.config)));
+            if (res.data) this._plugins.set(field, res.data);
           }
         } else {
           console.warn(`plugin：[${field}] is not enable or env incompatible current NODE_ENV`)
         }
       }
     }
-    if (this.isDev()) console.log('pluginMap：', pluginMap.keys());
+    if (this.isDev()) console.log('this._plugins：', this._plugins.keys());
   }
 }
 

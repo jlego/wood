@@ -1,34 +1,37 @@
-// wood-core update by YuRonghui 2018-11-18
+/*
+ * @Author: jLego
+ * @Last Modified by: jlego 2018-11-24
+ * @Des: wood-core
+ */
 const express = require('express');
 const bodyParser = require('body-parser');
-const config = require('./src/config');
-const Util = require('./src/util');
-const Errorcode = require('./src/errorcode');
 const plugin = require('./src/plugin');
 const _props = new Map();
+const _plugins = new Map();
 const _middlewares = new Set();
-const hasProps = [
-  'config',
-  'express',
-  'error_code',
-  'error',
-  'catchErr',
-  'use',
-  'addAppProp',
-  'Plugin',
-  '_plugins',
-  'init',
-  'start',
-];
+const _errorCode = {
+  "success": {code: 0, msg: '请求成功'},
+  "error": {code: 1, msg: '请求失败'},
+  "error_unknown": {code: 2, msg: '未知错误'},
+  "error_format": {code: 3, msg: '错误格式'},
+  "error_nodata": {code: 4, msg: '暂无数据'},
+  "error_body": {code: 5, msg: '请求参数不正确'},
+  "error_body_data": {code: 6, msg: '请求参数data不能为空'}
+};
 
 class App {
   constructor() {
-    this.config = config || {}
-    this.error_code = Errorcode; // 错误码
-    this.express = express;
-    this.error = Util.error;
-    this.catchErr = Util.catchErr;
-    this._plugins = null;
+    this.config = {
+      projectName: 'wood-node',  //项目名
+      version: 'v1.2.0', //版本号
+      env: 'development', //开发模式 production
+      errorCode: _errorCode, //错误码
+      plugins: {}, //插件配置
+      defaultDB: 'mongodb', //默认数据库
+      cluster: {
+        cpus: 1 //大于1为多进程模式
+      }
+    };
   }
 
   // 安装中间件
@@ -40,6 +43,15 @@ class App {
 
   // 添加内置属性
   addAppProp(pluginName, key, val) {
+    const hasProps = [
+      'config',
+      'error',
+      'catchErr',
+      'use',
+      'addAppProp',
+      'Plugin',
+      'start',
+    ];
     if(!hasProps.includes(key)){
       if (_props.has(key)) {
         if(this.config.isDebug) {
@@ -47,9 +59,7 @@ class App {
         }
         return;
       }
-      if (typeof val === 'function'){
-        val = val.bind(this);
-      }
+      val = typeof val === 'function' ? val.bind(this) : val;
       _props.set(key, pluginName);
       this[key] = val;
     }
@@ -57,41 +67,50 @@ class App {
 
   // 插件
   Plugin(pluginName) {
-    return this._plugins ? this._plugins.get(pluginName) : {};
+    return _plugins.get(pluginName);
   }
 
-  // 初始化应用
-  async init() {
+  // 错误对象
+  error(err) {
+    let result = {code: 1, msg: '请求失败'};
+    if (typeof err === 'object') {
+      if(err.message){
+        result.msg = err.message;
+        result.error = err;
+      }else if(err.msg && err.code){
+        result = err;
+      }
+    }else{
+      if(typeof err == 'string') result.msg = err;
+      result.error = err;
+    }
+    return result;
+  }
+
+  // 捕获异常
+  catchErr(promise){
+    return promise
+      .then(data => ({ data }))
+      .catch(err => ({ err }));
+  }
+
+  // 启动应用
+  async start(opts = {}) {
+    Object.assign(this.config, opts);
+    Object.assign(this.config.errorCode, _errorCode, opts.errorCode || {});
     const app = express();
     this.application = app;
-    if (!this.config.isDebug){
-      app.set('env', 'production');
-    }
+    app.set('env', this.config.env);
     app.use(bodyParser.json());
-
+    app.use(bodyParser.urlencoded({ extended: false }));
     // 加载中间件
     _middlewares.forEach(fun => {
       app.use(fun);
     });
-    
     //加载插件
-    await Util.catchErr(new plugin(this).loader());
-
-    // 拦截其他异常
-    process.on('uncaughtException', function (err) {
-      console.log('Caught exception: ', err);
-    });
-  }
-
-  // 启动应用
-  start(opts = {}) {
-    if (opts){
-      Object.assign(this.config, opts);
-    }
-    if (this.config.errorCode) {
-      Object.assign(this.error_code, this.config.errorCode);
-    }
-    this.init();
+    let result = await this.catchErr(new plugin(this, _plugins).loader());
+    if(result.err) console.warn(result.err);
   }
 };
+
 module.exports = global.WOOD = new App();

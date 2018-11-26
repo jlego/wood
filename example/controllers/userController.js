@@ -1,6 +1,7 @@
 const {
   Controller,
   Model,
+  Plugin,
   error,
   catchErr,
   Query,
@@ -34,18 +35,18 @@ class UserController extends controller {
   async search(req, res, next) {
     let params = Util.getParams(req);
     let {page = 1, limit = 20, ...query} = params.data || {};
-    let ECsearch = WOOD.Plugin('elasticsearch');
+    let ECsearch = Plugin('elasticsearch');
     if(ECsearch){
-      let result = await Util.catchErr(ECsearch.Search({
+      let result = await catchErr(ECsearch.Search({
         index: 'test', //数据库名
         type: 'users',  //表名
-        limit, 
-        page, 
+        limit,
+        page,
         query
       }));
       res.print(result);
     }else{
-      res.print(Util.error('搜索出错了'));
+      res.print(error('搜索出错了'));
     }
   }
 }
