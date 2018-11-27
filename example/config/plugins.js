@@ -23,11 +23,21 @@ exports.redisconnect = {
   package: 'wood-redis/connect',
   enable: true,
   config: {
-    master: {
+    master: [{
       port: 6379,
-      host: '127.0.0.1',
-      dbnum: 10
-    }
+      host: '10.0.1.26',
+      // password: 'auth',
+      db: 10
+    }, {
+      port: 6380,
+      host: '10.0.1.26'
+    }, {
+      port: 6381,
+      host: '10.0.1.26'
+    }, {
+      port: 6382,
+      host: '10.0.1.26'
+    }]
   }
 }
 /**
@@ -55,8 +65,8 @@ exports.mongoconnect = {
   package: 'wood-mongo/connect',
   enable: true,
   config: {
-    master: 'mongodb://127.0.0.1:27017/test',
-    // master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
+    // master: 'mongodb://127.0.0.1:27017/test',
+    master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
     // master: {
     //   dbName: 'test',
     //   host: ['10.0.1.26:51801','10.0.1.26:51802','10.0.1.26:51803','10.0.1.26:51804'],

@@ -24,7 +24,7 @@
     "wood-onerror": "^1.0.2",
     "wood-query": "^1.0.11",
     "wood-queue": "^1.0.9",
-    "wood-redis": "^1.0.12",
+    "wood-redis": "^1.1.0",
     "wood-requestbody": "^1.0.3",
     "wood-responseformat": "^1.0.8",
     "wood-router": "^1.0.18",
