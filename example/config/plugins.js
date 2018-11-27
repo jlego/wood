@@ -27,7 +27,7 @@ exports.redisconnect = {
       port: 6379,
       host: '10.0.1.26',
       // password: 'auth',
-      db: 10
+      // db: 10
     }, {
       port: 6380,
       host: '10.0.1.26'
