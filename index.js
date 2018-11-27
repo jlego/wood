@@ -53,12 +53,7 @@ class App {
       'start',
     ];
     if(!hasProps.includes(key)){
-      if (_props.has(key)) {
-        if(this.config.isDebug) {
-          console.warn(`[plugin:${pluginName}] -> [prop:${key}] is used in [${_props.get(key)}]`);
-        }
-        return;
-      }
+      if (_props.has(key)) return;
       val = typeof val === 'function' ? val.bind(this) : val;
       _props.set(key, pluginName);
       this[key] = val;
