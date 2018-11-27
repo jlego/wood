@@ -12,6 +12,6 @@ module.exports = {
 	plugins,
 	defaultDB: 'mongodb',
   cluster: {
-    cpus: 2
+    cpus: 1
   }
 };
