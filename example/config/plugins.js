@@ -155,6 +155,16 @@ exports.router = {
   enable: true
 }
 /**
+ * passport
+ */
+exports.passport = {
+  package: 'wood-passport',
+  enable: true,
+  config: {
+    redis: 'master'
+  }
+}
+/**
  * 模块加载器
  */
 exports.moduleloader = {
