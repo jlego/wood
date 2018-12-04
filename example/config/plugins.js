@@ -219,3 +219,36 @@ exports.userrole = {
     redis: 'master'
   }
 }
+
+
+/**
+ * 错误处理
+ */
+exports.error = {
+  package: 'wood-errorhandler',
+  enable: false,
+  config: {
+    // errorPageUrl: '/error.html',
+    // log(err, str, req, res) {
+    // },
+    // text(err, req, res) {
+    //   return (isDev || err.expose) && err.message ?
+    //     err.message : http.STATUS_CODES[this.statusCode];
+    // },
+    // json(err, req, res) {
+    //   const message = (isDev || err.expose) && err.message
+    //     ? err.message
+    //     : http.STATUS_CODES[this.status];
+
+    //   return { error: message };
+    // },
+    // html(err, req, res) {
+    //   return defaultTemplate
+    //     .replace('{{status}}', escapeHtml(err.status))
+    //     .replace('{{stack}}', escapeHtml(err.stack));
+    // },
+    // redirect: null,
+    // template: path.join(__dirname, 'template/error.html'),
+    // all: null
+  }
+}
