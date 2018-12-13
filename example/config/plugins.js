@@ -94,7 +94,11 @@ exports.elasticsearch = {
  */
 exports.crossdomain = {
   package: 'wood-crossdomain',
-  enable: true
+  enable: true,
+  config: {
+    // domain: '*',
+    verifyLogin: true
+  }
 }
 /**
  * 输出结果格式化
@@ -157,8 +161,8 @@ exports.router = {
 /**
  * passport
  */
-exports.passport = {
-  package: 'wood-passport',
+exports.authenticate = {
+  package: 'wood-authenticate',
   enable: true,
   config: {
     redis: 'master'
