@@ -23,21 +23,25 @@ exports.redisconnect = {
   package: 'wood-redis/connect',
   enable: true,
   config: {
-    master: [{
+    // master: [{
+    //   port: 6379,
+    //   host: '10.0.1.26',
+    //   // password: 'auth',
+    //   // db: 10
+    // }, {
+    //   port: 6380,
+    //   host: '10.0.1.26'
+    // }, {
+    //   port: 6381,
+    //   host: '10.0.1.26'
+    // }, {
+    //   port: 6382,
+    //   host: '10.0.1.26'
+    // }]
+    master: {
       port: 6379,
-      host: '10.0.1.26',
-      // password: 'auth',
-      // db: 10
-    }, {
-      port: 6380,
-      host: '10.0.1.26'
-    }, {
-      port: 6381,
-      host: '10.0.1.26'
-    }, {
-      port: 6382,
-      host: '10.0.1.26'
-    }]
+      host: '127.0.0.1'
+    }
   }
 }
 /**
@@ -65,8 +69,8 @@ exports.mongoconnect = {
   package: 'wood-mongo/connect',
   enable: true,
   config: {
-    // master: 'mongodb://127.0.0.1:27017/test',
-    master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
+    master: 'mongodb://127.0.0.1:27017/test',
+    // master: 'mongodb://10.0.1.26:51801,10.0.1.26:51802,10.0.1.26:51803,10.0.1.26:51804/test?replicaSet=rs0&readPreference=secondaryPreferred',
     // master: {
     //   dbName: 'test',
     //   host: ['10.0.1.26:51801','10.0.1.26:51802','10.0.1.26:51803','10.0.1.26:51804'],
@@ -76,19 +80,19 @@ exports.mongoconnect = {
     //   replset: 'rs0',
     //   readPreference: 'secondaryPreferred'
     // },
-    slave1: 'mongodb://127.0.0.1:27017/test',
+    // slave1: 'mongodb://127.0.0.1:27017/test',
   }
 }
 /**
  * elasticsearch全文搜索
  */
-exports.elasticsearch = {
-  package: 'wood-elasticsearch',
-  enable: true,
-  config: {
-    host: '10.0.1.26:9200',
-  }
-}
+// exports.elasticsearch = {
+//   package: 'wood-elasticsearch',
+//   enable: true,
+//   config: {
+//     host: '10.0.1.26:9200',
+//   }
+// }
 /**
  * 跨域处理
  */

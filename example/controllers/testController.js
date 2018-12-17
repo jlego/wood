@@ -4,11 +4,20 @@ const {
   error,
   catchErr,
   Query,
+  Token,
   Util
 } = require('../../index');
 const controller = Controller();
 
 class TestController extends controller {
+  async crypto(req, res, next) {
+    let token = new Token({secret: '1234567890'});
+    let enResult = token.createToken({a: 1});
+    let deResult = token.decodeToken(enResult);
+    let isOk = token.checkToken(enResult);
+    res.print({ enResult, deResult, isOk });
+  }
+
   async create(req, res, next) {
     const result = await catchErr(Model('tests').create({
       title: '小明',
