@@ -98,7 +98,11 @@ exports.mongoconnect = {
  */
 exports.crossdomain = {
   package: 'wood-crossdomain',
-  enable: true
+  enable: true,
+  config: {
+    // domain: '*',
+    verifyLogin: true
+  }
 }
 /**
  * 输出结果格式化
@@ -159,6 +163,16 @@ exports.router = {
   enable: true
 }
 /**
+ * 登录认证
+ */
+exports.authenticate = {
+  package: 'wood-authenticate',
+  enable: true,
+  config: {
+    redis: 'master'
+  }
+}
+/**
  * 模块加载器
  */
 exports.moduleloader = {
@@ -211,5 +225,38 @@ exports.userrole = {
   enable: true,
   config: {
     redis: 'master'
+  }
+}
+
+
+/**
+ * 错误处理
+ */
+exports.error = {
+  package: 'wood-errorhandler',
+  enable: false,
+  config: {
+    // errorPageUrl: '/error.html',
+    // log(err, str, req, res) {
+    // },
+    // text(err, req, res) {
+    //   return (isDev || err.expose) && err.message ?
+    //     err.message : http.STATUS_CODES[this.statusCode];
+    // },
+    // json(err, req, res) {
+    //   const message = (isDev || err.expose) && err.message
+    //     ? err.message
+    //     : http.STATUS_CODES[this.status];
+
+    //   return { error: message };
+    // },
+    // html(err, req, res) {
+    //   return defaultTemplate
+    //     .replace('{{status}}', escapeHtml(err.status))
+    //     .replace('{{stack}}', escapeHtml(err.stack));
+    // },
+    // redirect: null,
+    // template: path.join(__dirname, 'template/error.html'),
+    // all: null
   }
 }
