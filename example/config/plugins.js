@@ -159,7 +159,7 @@ exports.router = {
   enable: true
 }
 /**
- * passport
+ * 登录认证
  */
 exports.authenticate = {
   package: 'wood-authenticate',
