@@ -10,6 +10,35 @@ const {
 const controller = Controller();
 
 class TestController extends controller {
+  async testfun1() {
+    let result = await this.testfun2();
+    console.warn('---------------------1', result);
+    return result;
+  }
+
+  async testfun2() {
+    // return 'ok';
+    // throw error('失败2');
+    let result = await this.testfun3();
+    console.warn('---------------------2', result);
+    return result;
+  }
+
+  async testfun3() {
+    // return 'ok';
+    return Promise.resolve(1);
+    // return Promise.reject(error('失败3'));
+    // reject(err);
+    // throw error('失败3');
+  }
+
+  async testerr(req, res, next) {
+    let result = await catchErr(this.testfun1());
+    console.warn('---------------------4', result);
+    
+    res.print(result);
+  }
+
   async crypto(req, res, next) {
     let token = new Token({secret: '1234567890'});
     let enResult = token.createToken({a: 1});

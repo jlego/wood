@@ -17,6 +17,8 @@ const { Router, Controller } = require('../../index');
 const controller = Controller('test');
 const router = Router('test');
 
+router.put('/test/err', controller.testerr);
+
 router.put('/test/crypto', controller.crypto);
 /**
  * @api {put} /test/list 测试列表
