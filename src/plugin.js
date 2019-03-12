@@ -76,7 +76,7 @@ class Plugin {
         }
       }
     }
-    if (this.isDev()) console.log('this._plugins：', this._plugins.keys());
+    // if (this.isDev()) console.log('this._plugins：', this._plugins.keys());
   }
 }
 
